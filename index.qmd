@@ -1,7 +1,0 @@
----
-title: Hello Quarto CI
-date: last-modified
-resources:
-  - .nojekyll
----
-Setting up CI for quarto website build & publish.
