@@ -1,9 +1,30 @@
 [
   {
+    "objectID": "issues.html",
+    "href": "issues.html",
+    "title": "",
+    "section": "",
+    "text": "Hello, this page will showcase the dashboard for issues"
+  },
+  {
+    "objectID": "discussions.html",
+    "href": "discussions.html",
+    "title": "",
+    "section": "",
+    "text": "This page will show the dashboard for discussions"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Hello Quarto CI",
+    "title": "",
     "section": "",
-    "text": "This is a change that I made in 02/05/2025 4:19PM. Testing workflow action."
+    "text": "Hello, this page will showcase the main dashboard!"
+  },
+  {
+    "objectID": "pull_req.html",
+    "href": "pull_req.html",
+    "title": "",
+    "section": "",
+    "text": "Hello, this page will showcase the dashboard for pull requests!"
   }
 ]
