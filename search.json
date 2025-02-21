@@ -1,17 +1,17 @@
 [
   {
+    "objectID": "pull_req.html",
+    "href": "pull_req.html",
+    "title": "",
+    "section": "",
+    "text": "Hello, this page will showcase the dashboard for pull requests!"
+  },
+  {
     "objectID": "issues.html",
     "href": "issues.html",
     "title": "",
     "section": "",
     "text": "Hello, this page will showcase the dashboard for issues"
-  },
-  {
-    "objectID": "discussions.html",
-    "href": "discussions.html",
-    "title": "",
-    "section": "",
-    "text": "This page will show the dashboard for discussions"
   },
   {
     "objectID": "index.html",
@@ -21,10 +21,10 @@
     "text": "Hello, this page will showcase the main dashboard!"
   },
   {
-    "objectID": "pull_req.html",
-    "href": "pull_req.html",
+    "objectID": "discussions.html",
+    "href": "discussions.html",
     "title": "",
     "section": "",
-    "text": "Hello, this page will showcase the dashboard for pull requests!"
+    "text": "This page will show the dashboard for discussions"
   }
 ]
