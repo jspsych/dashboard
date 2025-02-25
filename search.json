@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "jsPsych Github Workflow",
-    "section": "",
-    "text": "Hello, this page will showcase the main dashboard!"
-  },
-  {
     "objectID": "pull_req.html",
     "href": "pull_req.html",
     "title": "",
@@ -19,6 +12,13 @@
     "title": "Python Scripts",
     "section": "",
     "text": "Hello, this page will showcase the dashboard for issues"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "jsPsych Github Workflow",
+    "section": "",
+    "text": "Hello, this page will showcase the main dashboard!"
   },
   {
     "objectID": "discussions.html",
