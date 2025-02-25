@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://smpdl.github.io/jsPsych-Dashboard/index.html</loc>
-    <lastmod>2025-02-25T20:47:48.432Z</lastmod>
-  </url>
-  <url>
     <loc>https://smpdl.github.io/jsPsych-Dashboard/pull_req.html</loc>
-    <lastmod>2025-02-25T20:48:02.300Z</lastmod>
-  </url>
-  <url>
-    <loc>https://smpdl.github.io/jsPsych-Dashboard/report_scripts.html</loc>
-    <lastmod>2025-02-25T20:48:05.191Z</lastmod>
+    <lastmod>2025-02-25T21:36:41.574Z</lastmod>
   </url>
   <url>
     <loc>https://smpdl.github.io/jsPsych-Dashboard/issues.html</loc>
-    <lastmod>2025-02-25T20:48:17.651Z</lastmod>
+    <lastmod>2025-02-25T21:36:56.098Z</lastmod>
+  </url>
+  <url>
+    <loc>https://smpdl.github.io/jsPsych-Dashboard/index.html</loc>
+    <lastmod>2025-02-25T21:36:58.581Z</lastmod>
+  </url>
+  <url>
+    <loc>https://smpdl.github.io/jsPsych-Dashboard/report_scripts.html</loc>
+    <lastmod>2025-02-25T21:37:01.309Z</lastmod>
   </url>
   <url>
     <loc>https://smpdl.github.io/jsPsych-Dashboard/discussions.html</loc>
-    <lastmod>2025-02-25T20:48:17.903Z</lastmod>
+    <lastmod>2025-02-25T21:37:01.530Z</lastmod>
   </url>
 </urlset>
