@@ -92,9 +92,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -170,165 +167,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>my_df <span class="op">=</span> create_ent_dataframe(<span class="st">'issues'</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>my_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>my_df[<span class="st">"is_pr"</span>].isin([<span class="st">"false"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="2">
-<div>
-
-
-<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">number</th>
-<th data-quarto-table-cell-role="th">user</th>
-<th data-quarto-table-cell-role="th">created_at</th>
-<th data-quarto-table-cell-role="th">closed_at</th>
-<th data-quarto-table-cell-role="th">state</th>
-<th data-quarto-table-cell-role="th">title</th>
-<th data-quarto-table-cell-role="th">is_pr</th>
-<th data-quarto-table-cell-role="th">year</th>
-<th data-quarto-table-cell-role="th">quarter</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>3507</td>
-<td>github-actions[bot]</td>
-<td>2025-02-12 15:04:04+00:00</td>
-<td>2025-02-13 19:22:35+00:00</td>
-<td>closed</td>
-<td>Version Packages</td>
-<td>True</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
-<td>3506</td>
-<td>cherriechang</td>
-<td>2025-02-06 18:55:59+00:00</td>
-<td>2025-02-06 19:25:54+00:00</td>
-<td>closed</td>
-<td>Update new plugin and extension template menti...</td>
-<td>True</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>3505</td>
-<td>cherriechang</td>
-<td>2025-02-05 23:06:41+00:00</td>
-<td>2025-02-06 18:52:17+00:00</td>
-<td>closed</td>
-<td>Point-plugin-templates-to-dev</td>
-<td>True</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>3504</td>
-<td>cherriechang</td>
-<td>2025-02-05 21:41:41+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>Decide on website structure</td>
-<td>False</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>3503</td>
-<td>cherriechang</td>
-<td>2025-02-05 21:41:20+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>Reorganize documentation</td>
-<td>False</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">1469</td>
-<td>5</td>
-<td>jodeleeuw</td>
-<td>2013-11-18 04:30:39+00:00</td>
-<td>2013-11-22 19:00:03+00:00</td>
-<td>closed</td>
-<td>update wiki with mturk integration information</td>
-<td>False</td>
-<td>2013</td>
-<td>4</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">1470</td>
-<td>4</td>
-<td>jodeleeuw</td>
-<td>2013-11-18 04:23:24+00:00</td>
-<td>2014-11-11 15:28:56+00:00</td>
-<td>closed</td>
-<td>new audio plugin</td>
-<td>False</td>
-<td>2013</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">1471</td>
-<td>3</td>
-<td>jodeleeuw</td>
-<td>2013-11-16 00:57:05+00:00</td>
-<td>2014-11-11 15:28:56+00:00</td>
-<td>closed</td>
-<td>preload audio files</td>
-<td>False</td>
-<td>2013</td>
-<td>4</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">1472</td>
-<td>2</td>
-<td>jodeleeuw</td>
-<td>2013-11-15 21:32:53+00:00</td>
-<td>2013-12-07 20:05:19+00:00</td>
-<td>closed</td>
-<td>same-diff plugin data naming</td>
-<td>False</td>
-<td>2013</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">1473</td>
-<td>1</td>
-<td>jodeleeuw</td>
-<td>2013-11-15 15:16:10+00:00</td>
-<td>2015-05-13 21:31:58+00:00</td>
-<td>closed</td>
-<td>new html-template plugin</td>
-<td>False</td>
-<td>2013</td>
-<td>4</td>
-</tr>
-</tbody>
-</table>
-
-<p>1474 rows × 9 columns</p>
-</div>
+<pre><code>0       False
+1       False
+2       False
+3       False
+4       False
+        ...  
+1469    False
+1470    False
+1471    False
+1472    False
+1473    False
+Name: is_pr, Length: 1474, dtype: bool</code></pre>
 </div>
 </div>
 
