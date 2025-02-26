@@ -18,7 +18,7 @@
     "href": "issues.html",
     "title": "Issue Reports",
     "section": "",
-    "text": "Hello, this page will showcase the dashboard for issues\n\n\nCode\nmy_df = create_ent_dataframe('issues')\nmy_df[\"is_pr\"].isin([\"false\"])\n\n\n0       False\n1       False\n2       False\n3       False\n4       False\n        ...  \n1469    False\n1470    False\n1471    False\n1472    False\n1473    False\nName: is_pr, Length: 1474, dtype: bool"
+    "text": "Hello, this page will showcase the dashboard for issues\n\n\nCode\nmy_df = create_ent_dataframe('issues')\nmy_df[my_df[\"is_pr\"].isin([\"false\"])]\n\n\n\n\n\n\n\n\n\nnumber\nuser\ncreated_at\nclosed_at\nstate\ntitle\nis_pr\nyear\nquarter"
   },
   {
     "objectID": "discussions.html",
