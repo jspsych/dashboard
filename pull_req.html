@@ -92,6 +92,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -166,22 +169,166 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-execution_count="2">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>my_df <span class="op">=</span> create_ent_dataframe(<span class="st">'issues'</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>my_df[<span class="st">"is_pr"</span>].isin([<span class="va">True</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>my_df <span class="op">=</span> select_ent(<span class="st">'pulls'</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>my_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>0        True
-1        True
-2        True
-3       False
-4       False
-        ...  
-1469    False
-1470    False
-1471    False
-1472    False
-1473    False
-Name: is_pr, Length: 1474, dtype: bool</code></pre>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">ent_type</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>3507</td>
+<td>github-actions[bot]</td>
+<td>2025-02-12 15:04:04+00:00</td>
+<td>2025-02-13 19:22:35+00:00</td>
+<td>closed</td>
+<td>Version Packages</td>
+<td>pull</td>
+<td>2025</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>3506</td>
+<td>cherriechang</td>
+<td>2025-02-06 18:55:59+00:00</td>
+<td>2025-02-06 19:25:54+00:00</td>
+<td>closed</td>
+<td>Update new plugin and extension template menti...</td>
+<td>pull</td>
+<td>2025</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3505</td>
+<td>cherriechang</td>
+<td>2025-02-05 23:06:41+00:00</td>
+<td>2025-02-06 18:52:17+00:00</td>
+<td>closed</td>
+<td>Point-plugin-templates-to-dev</td>
+<td>pull</td>
+<td>2025</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11</td>
+<td>3495</td>
+<td>jadeddelta</td>
+<td>2025-01-31 22:35:42+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>add default `mimeType` if none is specified</td>
+<td>pull</td>
+<td>2025</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">13</td>
+<td>3493</td>
+<td>github-actions[bot]</td>
+<td>2025-01-28 14:43:01+00:00</td>
+<td>2025-01-28 22:02:30+00:00</td>
+<td>closed</td>
+<td>Version Packages</td>
+<td>pull</td>
+<td>2025</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1449</td>
+<td>25</td>
+<td>jodeleeuw</td>
+<td>2014-02-12 23:12:19+00:00</td>
+<td>2014-02-12 23:12:32+00:00</td>
+<td>closed</td>
+<td>VSL animate occlusion</td>
+<td>pull</td>
+<td>2014</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1453</td>
+<td>21</td>
+<td>jodeleeuw</td>
+<td>2014-01-28 19:04:30+00:00</td>
+<td>2014-01-28 19:04:54+00:00</td>
+<td>closed</td>
+<td>changing keyup to keydown</td>
+<td>pull</td>
+<td>2014</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1454</td>
+<td>20</td>
+<td>jodeleeuw</td>
+<td>2014-01-27 20:08:32+00:00</td>
+<td>2014-01-27 20:09:02+00:00</td>
+<td>closed</td>
+<td>Timing zero fix</td>
+<td>pull</td>
+<td>2014</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1456</td>
+<td>18</td>
+<td>jodeleeuw</td>
+<td>2014-01-23 04:18:42+00:00</td>
+<td>2014-01-23 04:19:05+00:00</td>
+<td>closed</td>
+<td>Appending all CSS classes and IDs with jspsych...</td>
+<td>pull</td>
+<td>2014</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1460</td>
+<td>14</td>
+<td>jodeleeuw</td>
+<td>2014-01-13 20:06:56+00:00</td>
+<td>2014-01-13 20:07:26+00:00</td>
+<td>closed</td>
+<td>Animation rework</td>
+<td>pull</td>
+<td>2014</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>551 rows × 9 columns</p>
+</div>
 </div>
 </div>
 
