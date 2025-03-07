@@ -166,13 +166,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <p>Hello, this page will showcase the dashboard for issues</p>
-<div class="cell" data-execution_count="2">
+<p>Functions</p>
+<div class="cell" data-execution_count="11">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>my_df <span class="op">=</span> select_ent(<span class="st">'issues'</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>my_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>my_issues_quarterly</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="11">
 <div>
 
 
@@ -180,154 +180,367 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th">number</th>
-<th data-quarto-table-cell-role="th">user</th>
-<th data-quarto-table-cell-role="th">created_at</th>
-<th data-quarto-table-cell-role="th">closed_at</th>
-<th data-quarto-table-cell-role="th">state</th>
-<th data-quarto-table-cell-role="th">title</th>
-<th data-quarto-table-cell-role="th">ent_type</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th colspan="2" data-quarto-table-cell-role="th" data-halign="left">comment_count</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">count</th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">sum</th>
+</tr>
+<tr class="header">
 <th data-quarto-table-cell-role="th">year</th>
 <th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>3504</td>
-<td>cherriechang</td>
-<td>2025-02-05 21:41:41+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>Decide on website structure</td>
-<td>issue</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="even">
+<td data-quarto-table-cell-role="th">2013</td>
 <td data-quarto-table-cell-role="th">4</td>
-<td>3503</td>
-<td>cherriechang</td>
-<td>2025-02-05 21:41:20+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>Reorganize documentation</td>
-<td>issue</td>
-<td>2025</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">5</td>
-<td>3502</td>
-<td>cherriechang</td>
-<td>2025-02-05 21:14:21+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>Go through core plugins and update CITATIONS.cff</td>
-<td>issue</td>
-<td>2025</td>
-<td>1</td>
+<td>13</td>
+<td>10377783.46</td>
+<td>2.08</td>
+<td>27.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">6</td>
-<td>3501</td>
-<td>jadeddelta</td>
-<td>2025-02-05 04:07:10+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>default parameters aren't saved in `save_trial...</td>
-<td>issue</td>
-<td>2025</td>
-<td>1</td>
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2014</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>25</td>
+<td>15300512.29</td>
+<td>0.64</td>
+<td>16.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">7</td>
-<td>3500</td>
-<td>jadeddelta</td>
-<td>2025-02-05 03:58:17+00:00</td>
-<td>NaT</td>
-<td>open</td>
-<td>broken psiturk example link in docs</td>
-<td>issue</td>
-<td>2025</td>
-<td>1</td>
+<td data-quarto-table-cell-role="th">2</td>
+<td>18</td>
+<td>5178905.06</td>
+<td>1.11</td>
+<td>20.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
+<td data-quarto-table-cell-role="th">3</td>
+<td>18</td>
+<td>287196.97</td>
+<td>1.00</td>
+<td>18.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">1469</td>
-<td>5</td>
-<td>jodeleeuw</td>
-<td>2013-11-18 04:30:39+00:00</td>
-<td>2013-11-22 19:00:03+00:00</td>
-<td>closed</td>
-<td>update wiki with mturk integration information</td>
-<td>issue</td>
-<td>2013</td>
-<td>4</td>
+<td data-quarto-table-cell-role="th">4</td>
+<td>28</td>
+<td>2709955.69</td>
+<td>2.43</td>
+<td>68.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">1470</td>
-<td>4</td>
-<td>jodeleeuw</td>
-<td>2013-11-18 04:23:24+00:00</td>
-<td>2014-11-11 15:28:56+00:00</td>
-<td>closed</td>
-<td>new audio plugin</td>
-<td>issue</td>
-<td>2013</td>
-<td>4</td>
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2015</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>24</td>
+<td>3652635.18</td>
+<td>0.62</td>
+<td>15.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">1471</td>
-<td>3</td>
-<td>jodeleeuw</td>
-<td>2013-11-16 00:57:05+00:00</td>
-<td>2014-11-11 15:28:56+00:00</td>
-<td>closed</td>
-<td>preload audio files</td>
-<td>issue</td>
-<td>2013</td>
-<td>4</td>
+<td data-quarto-table-cell-role="th">2</td>
+<td>29</td>
+<td>2066250.42</td>
+<td>1.31</td>
+<td>38.0</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">1472</td>
-<td>2</td>
-<td>jodeleeuw</td>
-<td>2013-11-15 21:32:53+00:00</td>
-<td>2013-12-07 20:05:19+00:00</td>
-<td>closed</td>
-<td>same-diff plugin data naming</td>
-<td>issue</td>
-<td>2013</td>
-<td>4</td>
+<td data-quarto-table-cell-role="th">3</td>
+<td>28</td>
+<td>6865406.20</td>
+<td>2.21</td>
+<td>62.0</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">1473</td>
-<td>1</td>
-<td>jodeleeuw</td>
-<td>2013-11-15 15:16:10+00:00</td>
-<td>2015-05-13 21:31:58+00:00</td>
-<td>closed</td>
-<td>new html-template plugin</td>
-<td>issue</td>
-<td>2013</td>
-<td>4</td>
+<td data-quarto-table-cell-role="th">4</td>
+<td>22</td>
+<td>8689389.95</td>
+<td>0.68</td>
+<td>15.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2016</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>37</td>
+<td>12454737.23</td>
+<td>1.43</td>
+<td>53.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>20</td>
+<td>3303052.99</td>
+<td>1.35</td>
+<td>27.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>21</td>
+<td>11652559.56</td>
+<td>1.90</td>
+<td>40.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>21</td>
+<td>11161658.08</td>
+<td>2.10</td>
+<td>44.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2017</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>48</td>
+<td>8690206.00</td>
+<td>1.42</td>
+<td>68.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>42</td>
+<td>12373582.27</td>
+<td>1.90</td>
+<td>80.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>65</td>
+<td>8357648.48</td>
+<td>0.46</td>
+<td>30.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>12</td>
+<td>5959615.58</td>
+<td>1.58</td>
+<td>19.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2018</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>24</td>
+<td>14510618.29</td>
+<td>4.62</td>
+<td>111.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>31</td>
+<td>6525038.49</td>
+<td>2.06</td>
+<td>64.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>24</td>
+<td>7664387.70</td>
+<td>1.46</td>
+<td>35.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>10</td>
+<td>5310803.10</td>
+<td>1.10</td>
+<td>11.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2019</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>19</td>
+<td>7081360.30</td>
+<td>3.05</td>
+<td>58.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>17</td>
+<td>7406742.23</td>
+<td>3.41</td>
+<td>58.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>28</td>
+<td>10213359.00</td>
+<td>2.14</td>
+<td>60.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>8</td>
+<td>9991369.10</td>
+<td>1.12</td>
+<td>9.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2020</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>14</td>
+<td>8794547.94</td>
+<td>2.50</td>
+<td>35.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>28</td>
+<td>8831021.82</td>
+<td>2.82</td>
+<td>79.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>46</td>
+<td>2322375.34</td>
+<td>3.00</td>
+<td>138.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>54</td>
+<td>1875151.51</td>
+<td>2.61</td>
+<td>141.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2021</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>94</td>
+<td>2656168.04</td>
+<td>3.07</td>
+<td>289.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>46</td>
+<td>2012385.55</td>
+<td>3.13</td>
+<td>144.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>65</td>
+<td>1085283.35</td>
+<td>2.69</td>
+<td>175.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>63</td>
+<td>1854733.24</td>
+<td>2.59</td>
+<td>163.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2022</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>33</td>
+<td>5407325.99</td>
+<td>1.09</td>
+<td>36.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>49</td>
+<td>1828903.12</td>
+<td>1.78</td>
+<td>87.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>32</td>
+<td>6475034.47</td>
+<td>1.62</td>
+<td>52.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>41</td>
+<td>5229777.63</td>
+<td>2.63</td>
+<td>108.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2023</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>13</td>
+<td>4671041.71</td>
+<td>1.15</td>
+<td>15.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>21</td>
+<td>5385012.18</td>
+<td>1.19</td>
+<td>25.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>21</td>
+<td>3705293.58</td>
+<td>1.81</td>
+<td>38.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>27</td>
+<td>3578790.36</td>
+<td>1.67</td>
+<td>45.0</td>
+</tr>
+<tr class="even">
+<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2024</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>29</td>
+<td>790038.10</td>
+<td>2.14</td>
+<td>62.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>44</td>
+<td>667138.46</td>
+<td>2.18</td>
+<td>96.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>49</td>
+<td>686767.99</td>
+<td>1.84</td>
+<td>90.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>46</td>
+<td>577062.76</td>
+<td>1.11</td>
+<td>51.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2025</td>
+<td data-quarto-table-cell-role="th">1</td>
+<td>28</td>
+<td>215730.81</td>
+<td>1.29</td>
+<td>36.0</td>
 </tr>
 </tbody>
 </table>
 
-<p>923 rows × 9 columns</p>
 </div>
 </div>
 </div>
