@@ -13,3 +13,8 @@ Hello, this page will showcase the dashboard for issues
 ```{python}
 my_issues_quarterly
 ```
+
+
+```{python}
+plot_quarterly_metrics(my_issues_quarterly, ('avg_interaction_time', 'mean'))
+```
