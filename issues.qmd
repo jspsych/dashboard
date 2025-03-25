@@ -11,6 +11,11 @@ Hello, this page will showcase the dashboard for issues
 {{< include report_scripts.qmd >}}
 
 ```{python}
+
+# [] make a paramteter that'll show the delta from Val's code
+
+# [] fix the graph, and organise the script 
+#  
 my_issues_quarterly
 ```
 

@@ -173,7 +173,6 @@ def analyze_interaction_times(df, comments_df):
 ```{python}
 #| echo: false
 
-
 def quarterly_metrics(df):
   return df.groupby(['year', 'quarter']).agg({
   'number': 'count',
@@ -204,7 +203,6 @@ def plot_quarterly_metrics(metrics, target_metric):
 
 ```{python}
 #| echo: false
-
 def generate_report():
   issues_analysis = analyze_interaction_times(iss_df, comm_df)
   pulls_analysis = analyze_interaction_times(pulls_df, comm_df)

@@ -6,4 +6,52 @@ format:
 jupyter: python3
 ---
 
-Hello, this page will showcase the main dashboard!
+{{< include report_scripts.qmd >}}
+
+<div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+  <div>
+    <h2># of Open PRs</h2>
+
+    ```{python}
+    iss_df[iss_df['state'] == 'open'].shape[0]
+    ```
+
+  </div>
+  <div>
+    <h2># of Open Issues</h2>
+
+    ```{python}
+    pulls_df[pulls_df['state'] == 'open'].shape[0]
+    ```
+
+  </div>
+  <div>
+    <h2># of Issues</h2>
+
+    ```{python}
+    0
+    ```
+
+  </div>
+  <div>
+  <h2># of Open PRs</h2>
+
+    ```{python}
+    0
+    ```
+
+  </div>
+</div>
+
+<div style="display: flex; justify-content: space-around;">
+  <div>
+    ```{python}
+    head(pulls_df)
+    ```
+  </div>
+  <div>
+    ```{python}
+    head(iss_df)
+    ```
+  </div>
+</div>
