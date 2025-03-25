@@ -8,6 +8,10 @@ jupyter: python3
 
 {{< include report_scripts.qmd >}}
 
+```{python}
+import pandas
+```
+
 <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
   <div>
     <h2># of Open PRs</h2>
