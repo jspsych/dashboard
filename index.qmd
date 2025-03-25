@@ -50,12 +50,12 @@ import pandas
 <div style="display: flex; justify-content: space-around;">
   <div>
     ```{python}
-    head(pulls_df)
+    pulls_df.head()
     ```
   </div>
   <div>
     ```{python}
-    head(iss_df)
+    iss_df.head()
     ```
   </div>
 </div>
