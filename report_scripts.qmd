@@ -211,6 +211,8 @@ def quarterly_metrics(df):
 ```
 
 ```{python}
+#| echo: false
+
 coreTeam = ['jodeleeuw', 'becky-gilbert', 'bjoluc', 'cherriechang', 'jadeddelta', 'github-actions[bot]']
 
 def open_awhile(df):
