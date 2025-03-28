@@ -209,6 +209,18 @@ def plot_quarterly_metrics(metrics, target_metric):
   plt.grid(True)
   plt.show()
 
+def plot_history(metrics, target_metric):
+  plt.figure(figsize=(10, 6))
+  quarters = [f'{year} Q{quarter}' for year, quarter in metrics.index]
+  plt.plot(quarters, metrics[target_metric],
+    marker='o')
+
+  plt.xlabel('Quarter')
+  plt.xticks(rotation=90)
+  plt.ylabel(target_metric)
+  plt.title(f'Quarterly {target_metric} Over Time')
+  plt.grid(True)
+  plt.show()
 ```
 
 ```{python}
