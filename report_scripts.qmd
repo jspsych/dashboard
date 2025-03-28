@@ -106,6 +106,7 @@ def create_df(type, data):
                     'closed_at': pd.to_datetime(item['closed_at']) if item['closed_at'] else None,
                     'state': item['state'],
                     'title': item['title'],
+                    'pull_request': item['pull_request']
                 }
                 entries.append(entry)
         df = pd.DataFrame(entries)
