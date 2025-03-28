@@ -183,12 +183,30 @@ def analyze_interaction_times(df, comments_df):
 ```{python}
 #| echo: false
 
+def issue_agg(df):
+  return df.groupby(['year', 'quarter']).agg(
+    openedIssues = ('number', 'count'),
+    avgInteractionTime = ('avg_interaction_time', 'mean'),
+    avgInteraction = ('comment_count', 'mean'),
+    openedIssuesClosed = ('closed_at', 'count')
+  ).round(2)
+
+def pr_agg(df):
+  df = df.groupby(['year', 'quarter']).agg(
+    openedPRs = ('number', 'count'),
+    avgInteractionTime = ('avg_interaction_time', 'mean'),
+    avgInteraction = ('comment_count', 'mean'),
+    openedPRsClosed = ('closed_at', 'count'),
+    openedPRsMerged = ('merge_time', 'count'),
+    avgMergeTime = ('merge_time', 'mean')
+  ).round(2)
+  df['closed without merging'] = df['openedPRsClosed'] - df['openedPRsMerged']
+  return df
+
 def quarterly_metrics(df):
-  return df.groupby(['year', 'quarter']).agg({
-  'number': 'count',
-  'avg_interaction_time': 'mean',
-  'comment_count': ['mean', 'sum']
-  }).round(2)
+  if 'merge_time' in df.columns:
+    return pr_agg(df)
+  return issue_agg(df)
 ```
 
 
