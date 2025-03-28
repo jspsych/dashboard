@@ -15,7 +15,7 @@ Hello, this page will showcase the dashboard for pull requests!
 #[] make a param for Val's code
 
 #Val's functions below
-plot_history(prsQuarterly, 'avgMergeTime')
-plot_history(prsQuarterly, 'avgInteractionTime')
-plot_history(prsQuarterly, 'closed without merging')
+plot_history(my_prs_quarterly, 'avgMergeTime')
+plot_history(my_prs_quarterly, 'avgInteractionTime')
+plot_history(my_prs_quarterly, 'closed without merging')
 ```
