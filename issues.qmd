@@ -11,15 +11,17 @@ Hello, this page will showcase the dashboard for issues
 {{< include report_scripts.qmd >}}
 
 ```{python}
-
-# [] make a paramteter that'll show the delta from Val's code
-
-# [] fix the graph, and organise the script 
-#  
-my_issues_quarterly
+#| echo: false
+open_awhile(my_issues_analysis)
 ```
-
-
 ```{python}
-plot_quarterly_metrics(my_issues_quarterly, 'avgInteractionTime')
+#| echo: false
+open_awhile(from_community(my_issues_analysis))
+```
+```{python}
+#| echo: false
+
+#[] make a param for Val's code
+
+plot_history(my_issues_analysis, 'avgInteractionTime')
 ```
