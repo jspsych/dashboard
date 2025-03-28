@@ -23,5 +23,5 @@ open_awhile(from_community(my_issues_analysis))
 
 #[] make a param for Val's code
 
-plot_history(my_issues_analysis, 'avgInteractionTime')
+plot_history(my_issues_quarterly, 'avgInteractionTime')
 ```
