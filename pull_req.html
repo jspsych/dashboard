@@ -172,7 +172,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#[] make a param for Val's code</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>my_prs_quarterly</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>my_prs_quarterly</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>my_prs_analysis</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div>
@@ -182,352 +183,202 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">openedIssues</th>
-<th data-quarto-table-cell-role="th">avgInteractionTime</th>
-<th data-quarto-table-cell-role="th">avgInteraction</th>
-<th data-quarto-table-cell-role="th">openedIssuesClosed</th>
-</tr>
-<tr class="odd">
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">pull_request</th>
 <th data-quarto-table-cell-role="th">year</th>
 <th data-quarto-table-cell-role="th">quarter</th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th data-quarto-table-cell-role="th">merge_time</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2014</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>9</td>
-<td>0.00</td>
-<td>0.22</td>
-<td>9</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>4</td>
-<td>0.00</td>
-<td>0.25</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>5</td>
+<td data-quarto-table-cell-role="th">0</td>
+<td>3514</td>
+<td>github-actions[bot]</td>
+<td>2025-03-07 14:56:09+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Version Packages</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2025</td>
+<td>1</td>
 <td>NaN</td>
-<td>0.00</td>
-<td>5</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>5</td>
-<td>0.18</td>
-<td>0.60</td>
-<td>5</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2015</td>
 <td data-quarto-table-cell-role="th">1</td>
-<td>7</td>
-<td>1.49</td>
-<td>0.43</td>
-<td>7</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>3</td>
-<td>0.06</td>
-<td>0.33</td>
-<td>3</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>10</td>
-<td>25.43</td>
-<td>2.70</td>
-<td>10</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>6</td>
-<td>7.59</td>
-<td>0.67</td>
-<td>6</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2016</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>5</td>
-<td>0.01</td>
-<td>0.80</td>
-<td>5</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>3</td>
-<td>0.58</td>
-<td>2.33</td>
-<td>3</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>4</td>
-<td>50.59</td>
-<td>1.25</td>
-<td>4</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>9</td>
-<td>128.80</td>
-<td>2.33</td>
-<td>9</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2017</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>17</td>
-<td>55.70</td>
-<td>1.35</td>
-<td>17</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>8</td>
-<td>86.14</td>
-<td>0.88</td>
-<td>8</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>20</td>
-<td>122.84</td>
-<td>0.35</td>
-<td>20</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>2</td>
-<td>14.94</td>
-<td>5.50</td>
-<td>2</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2018</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>11</td>
-<td>80.27</td>
-<td>3.18</td>
-<td>11</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>4</td>
-<td>54.36</td>
-<td>4.50</td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>7</td>
-<td>110.12</td>
-<td>2.00</td>
-<td>7</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
+<td>3507</td>
+<td>github-actions[bot]</td>
+<td>2025-02-12 15:04:04+00:00</td>
+<td>2025-02-13 19:22:35+00:00</td>
+<td>closed</td>
+<td>Version Packages</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2025</td>
 <td>1</td>
-<td>59.78</td>
-<td>3.00</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>1.179525</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3506</td>
+<td>cherriechang</td>
+<td>2025-02-06 18:55:59+00:00</td>
+<td>2025-02-06 19:25:54+00:00</td>
+<td>closed</td>
+<td>Update new plugin and extension template menti...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2025</td>
 <td>1</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2019</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>7</td>
-<td>61.63</td>
-<td>2.86</td>
-<td>7</td>
+<td>[2025-02-06 18:56:03+00:00]</td>
+<td>1.0</td>
+<td>0.010388</td>
+<td>0.020775</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>6</td>
-<td>14.12</td>
-<td>1.33</td>
-<td>6</td>
-</tr>
-<tr class="odd">
 <td data-quarto-table-cell-role="th">3</td>
-<td>7</td>
-<td>101.26</td>
-<td>1.86</td>
-<td>7</td>
+<td>3505</td>
+<td>cherriechang</td>
+<td>2025-02-05 23:06:41+00:00</td>
+<td>2025-02-06 18:52:17+00:00</td>
+<td>closed</td>
+<td>Point-plugin-templates-to-dev</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2025</td>
+<td>1</td>
+<td>[2025-02-05 23:06:44+00:00]</td>
+<td>1.0</td>
+<td>0.411667</td>
+<td>NaN</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td data-quarto-table-cell-role="th">4</td>
-<td>5</td>
-<td>154.17</td>
-<td>1.40</td>
-<td>5</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2020</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>11</td>
-<td>116.43</td>
-<td>2.18</td>
-<td>11</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>11</td>
-<td>91.00</td>
-<td>1.91</td>
-<td>11</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>15</td>
-<td>27.51</td>
-<td>1.73</td>
-<td>15</td>
+<td>3495</td>
+<td>jadeddelta</td>
+<td>2025-01-31 22:35:42+00:00</td>
+<td>2025-03-07 14:52:24+00:00</td>
+<td>closed</td>
+<td>add default `mimeType` if none is specified</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2025</td>
+<td>1</td>
+<td>[2025-01-31 22:35:45+00:00, 2025-02-02 16:59:2...</td>
+<td>4.0</td>
+<td>6.935653</td>
+<td>34.678264</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>27</td>
-<td>32.00</td>
-<td>2.74</td>
-<td>27</td>
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
 </tr>
 <tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2021</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>39</td>
-<td>40.08</td>
-<td>2.54</td>
-<td>39</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>17</td>
-<td>36.16</td>
-<td>3.76</td>
-<td>16</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>40</td>
-<td>7.45</td>
-<td>2.95</td>
-<td>40</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>34</td>
-<td>5.70</td>
-<td>3.12</td>
-<td>33</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2022</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>14</td>
-<td>38.35</td>
-<td>1.29</td>
-<td>14</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>21</td>
-<td>2.33</td>
-<td>2.48</td>
-<td>21</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>12</td>
-<td>4.11</td>
-<td>2.00</td>
-<td>12</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>16</td>
-<td>71.31</td>
-<td>3.44</td>
-<td>13</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2023</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>8</td>
-<td>54.43</td>
-<td>1.38</td>
-<td>8</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>9</td>
-<td>59.58</td>
-<td>1.56</td>
-<td>9</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
-<td>10</td>
-<td>60.44</td>
-<td>2.70</td>
-<td>9</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>12</td>
-<td>32.29</td>
-<td>2.00</td>
-<td>12</td>
-</tr>
-<tr class="odd">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2024</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>11</td>
-<td>10.39</td>
-<td>2.27</td>
-<td>10</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2</td>
-<td>16</td>
-<td>1.79</td>
-<td>1.75</td>
-<td>16</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">3</td>
+<td data-quarto-table-cell-role="th">547</td>
 <td>25</td>
-<td>4.75</td>
-<td>1.60</td>
-<td>20</td>
+<td>jodeleeuw</td>
+<td>2014-02-12 23:12:19+00:00</td>
+<td>2014-02-12 23:12:32+00:00</td>
+<td>closed</td>
+<td>VSL animate occlusion</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2014</td>
+<td>1</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>0.000150</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">4</td>
-<td>22</td>
-<td>6.51</td>
-<td>0.95</td>
-<td>22</td>
+<td data-quarto-table-cell-role="th">548</td>
+<td>21</td>
+<td>jodeleeuw</td>
+<td>2014-01-28 19:04:30+00:00</td>
+<td>2014-01-28 19:04:54+00:00</td>
+<td>closed</td>
+<td>changing keyup to keydown</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2014</td>
+<td>1</td>
+<td>[2014-01-28 19:05:28+00:00]</td>
+<td>1.0</td>
+<td>0.000336</td>
+<td>0.000278</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2025</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>17</td>
-<td>1.81</td>
-<td>1.53</td>
-<td>15</td>
+<td data-quarto-table-cell-role="th">549</td>
+<td>20</td>
+<td>jodeleeuw</td>
+<td>2014-01-27 20:08:32+00:00</td>
+<td>2014-01-27 20:09:02+00:00</td>
+<td>closed</td>
+<td>Timing zero fix</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2014</td>
+<td>1</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>0.000347</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">550</td>
+<td>18</td>
+<td>jodeleeuw</td>
+<td>2014-01-23 04:18:42+00:00</td>
+<td>2014-01-23 04:19:05+00:00</td>
+<td>closed</td>
+<td>Appending all CSS classes and IDs with jspsych...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2014</td>
+<td>1</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>0.000266</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">551</td>
+<td>14</td>
+<td>jodeleeuw</td>
+<td>2014-01-13 20:06:56+00:00</td>
+<td>2014-01-13 20:07:26+00:00</td>
+<td>closed</td>
+<td>Animation rework</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2014</td>
+<td>1</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>0.000347</td>
 </tr>
 </tbody>
 </table>
 
+<p>552 rows × 13 columns</p>
 </div>
 </div>
 </div>
