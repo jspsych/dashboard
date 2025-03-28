@@ -3,6 +3,8 @@ format:
   html:
     code-fold: true
 jupyter: python3
+execute: 
+  cache: true
 ---
 
 Functions
@@ -17,10 +19,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import httpx
 import os
+from dotenv import load_dotenv
 ```
 
 ```{python}
 #| echo: false
+
+load_dotenv()
 
 
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')

@@ -2,7 +2,7 @@ project:
   type: website
   output-dir: docs
 execute:
-  freeze: auto
+  cache: true
 format: html
 brand: true
 website:

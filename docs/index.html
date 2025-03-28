@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
-<head>
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
 
-<meta charset="utf-8" />
-<meta name="generator" content="quarto-1.6.40" />
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>index</title>
+<title>jsPsych Github Workflow</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,9 +20,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
-<!-- htmldependencies:E3FAD763 -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-aeaa7cc16dfadb9d2ccd17a9aa896781.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -52,48 +100,52 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
 
 
 </head>
 
-<body>
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="/index.html" class="navbar-brand navbar-brand-logo">
-    <img src="/assets/jspsych-logo.svg" alt="" class="navbar-logo" />
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    <img src="./assets/jspsych-logo.svg" alt="" class="navbar-logo">
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-  aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation"
-  onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="/index.html"> 
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="/pull_req.html"> 
+    <a class="nav-link" href="./pull_req.html"> 
 <span class="menu-text">Pull Requests</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="/issues.html"> 
+    <a class="nav-link" href="./issues.html"> 
 <span class="menu-text">Issues</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="/discussions.html"> 
+    <a class="nav-link" href="./discussions.html"> 
 <span class="menu-text">Discussions</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
-    <a href="https://github.com/jspsych/jsPsych"  title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://github.com/jspsych/jsPsych" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
       </div> <!-- /container-fluid -->
     </nav>
@@ -102,25 +154,309 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <div id="quarto-toc-target"></div>
-    </div>
+    
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-
-
-
-<p>Hello, this page will showcase the main dashboard!</p>
-<div id="quarto-navigation-envelope" class="hidden">
-<p><span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6SG9tZQ==">Home</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6L2luZGV4Lmh0bWw=">/index.html</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6UHVsbCBSZXF1ZXN0cw==">Pull Requests</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6L3B1bGxfcmVxLmh0bWw=">/pull_req.html</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6SXNzdWVz">Issues</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6L2lzc3Vlcy5odG1s">/issues.html</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6RGlzY3Vzc2lvbnM=">Discussions</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLWludC1uYXZiYXI6L2Rpc2N1c3Npb25zLmh0bWw=">/discussions.html</span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLW5hdmJhci10b29sczpodHRwczovL2dpdGh1Yi5jb20vanNwc3ljaC9qc1BzeWNo">https://github.com/jspsych/jsPsych</span></p>
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">jsPsych Github Workflow</h1>
 </div>
-<div id="quarto-meta-markdown" class="hidden">
-<p><span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLXR3aXR0ZXJjYXJkdGl0bGU="></span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLW9nY2FyZHRpdGxl"></span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLXR3aXR0ZXJjYXJkZGVzYw=="></span> <span class="hidden quarto-markdown-envelope-contents" data-render-id="cXVhcnRvLW9nY2FyZGRkZXNj"></span></p>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>format: html: code-fold: true jupyter: python3</p>
+<hr>
+<p>Functions</p>
+<div id="a0a0fafe" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
+<div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+<div>
+<pre><code>&lt;h2&gt;# of Open PRs&lt;/h2&gt;
+
+
+::: {#76bbfffc .cell execution_count=12}
+``` {.python .cell-code}
+iss_df[iss_df['state'] == 'open'].shape[0]
+```
+
+::: {.cell-output .cell-output-display execution_count=12}
+```
+150
+```
+:::
+:::</code></pre>
+</div>
+<div>
+<pre><code>&lt;h2&gt;# of Open Issues&lt;/h2&gt;
+
+
+::: {#7da0eb69 .cell execution_count=13}
+``` {.python .cell-code}
+pulls_df[pulls_df['state'] == 'open'].shape[0]
+```
+
+::: {.cell-output .cell-output-display execution_count=13}
+```
+14
+```
+:::
+:::</code></pre>
+</div>
+<div>
+<pre><code>&lt;h2&gt;# of Issues&lt;/h2&gt;
+
+
+::: {#d26202fb .cell execution_count=14}
+``` {.python .cell-code}
+0
+```
+
+::: {.cell-output .cell-output-display execution_count=14}
+```
+0
+```
+:::
+:::</code></pre>
+</div>
+<div>
+<pre><code>&lt;h2&gt;# of Open PRs&lt;/h2&gt;
+
+
+::: {#a283f14a .cell execution_count=15}
+``` {.python .cell-code}
+0
+```
+
+::: {.cell-output .cell-output-display execution_count=15}
+```
+0
+```
+:::
+:::</code></pre>
+</div>
+</div>
+<div style="display: flex; justify-content: space-around;">
+<div>
+<pre><code>::: {#ee5fdb30 .cell execution_count=16}
+``` {.python .cell-code}
+pulls_df.head()
+```
+
+::: {.cell-output .cell-output-display execution_count=16}
+```{=html}
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;number&lt;/th&gt;
+      &lt;th&gt;user&lt;/th&gt;
+      &lt;th&gt;created_at&lt;/th&gt;
+      &lt;th&gt;closed_at&lt;/th&gt;
+      &lt;th&gt;state&lt;/th&gt;
+      &lt;th&gt;title&lt;/th&gt;
+      &lt;th&gt;year&lt;/th&gt;
+      &lt;th&gt;quarter&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3514&lt;/td&gt;
+      &lt;td&gt;github-actions[bot]&lt;/td&gt;
+      &lt;td&gt;2025-03-07 14:56:09+00:00&lt;/td&gt;
+      &lt;td&gt;NaT&lt;/td&gt;
+      &lt;td&gt;open&lt;/td&gt;
+      &lt;td&gt;Version Packages&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;3507&lt;/td&gt;
+      &lt;td&gt;github-actions[bot]&lt;/td&gt;
+      &lt;td&gt;2025-02-12 15:04:04+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-13 19:22:35+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Version Packages&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3506&lt;/td&gt;
+      &lt;td&gt;cherriechang&lt;/td&gt;
+      &lt;td&gt;2025-02-06 18:55:59+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-06 19:25:54+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Update new plugin and extension template menti...&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3505&lt;/td&gt;
+      &lt;td&gt;cherriechang&lt;/td&gt;
+      &lt;td&gt;2025-02-05 23:06:41+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-06 18:52:17+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Point-plugin-templates-to-dev&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3495&lt;/td&gt;
+      &lt;td&gt;jadeddelta&lt;/td&gt;
+      &lt;td&gt;2025-01-31 22:35:42+00:00&lt;/td&gt;
+      &lt;td&gt;2025-03-07 14:52:24+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;add default `mimeType` if none is specified&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+```
+:::
+:::</code></pre>
+</div>
+<div>
+<pre><code>::: {#eb933bbe .cell execution_count=17}
+``` {.python .cell-code}
+iss_df.head()
+```
+
+::: {.cell-output .cell-output-display execution_count=17}
+```{=html}
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;number&lt;/th&gt;
+      &lt;th&gt;user&lt;/th&gt;
+      &lt;th&gt;created_at&lt;/th&gt;
+      &lt;th&gt;closed_at&lt;/th&gt;
+      &lt;th&gt;state&lt;/th&gt;
+      &lt;th&gt;title&lt;/th&gt;
+      &lt;th&gt;year&lt;/th&gt;
+      &lt;th&gt;quarter&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3514&lt;/td&gt;
+      &lt;td&gt;github-actions[bot]&lt;/td&gt;
+      &lt;td&gt;2025-03-07 14:56:09+00:00&lt;/td&gt;
+      &lt;td&gt;NaT&lt;/td&gt;
+      &lt;td&gt;open&lt;/td&gt;
+      &lt;td&gt;Version Packages&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;3507&lt;/td&gt;
+      &lt;td&gt;github-actions[bot]&lt;/td&gt;
+      &lt;td&gt;2025-02-12 15:04:04+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-13 19:22:35+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Version Packages&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3506&lt;/td&gt;
+      &lt;td&gt;cherriechang&lt;/td&gt;
+      &lt;td&gt;2025-02-06 18:55:59+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-06 19:25:54+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Update new plugin and extension template menti...&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3505&lt;/td&gt;
+      &lt;td&gt;cherriechang&lt;/td&gt;
+      &lt;td&gt;2025-02-05 23:06:41+00:00&lt;/td&gt;
+      &lt;td&gt;2025-02-06 18:52:17+00:00&lt;/td&gt;
+      &lt;td&gt;closed&lt;/td&gt;
+      &lt;td&gt;Point-plugin-templates-to-dev&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3504&lt;/td&gt;
+      &lt;td&gt;cherriechang&lt;/td&gt;
+      &lt;td&gt;2025-02-05 21:41:41+00:00&lt;/td&gt;
+      &lt;td&gt;NaT&lt;/td&gt;
+      &lt;td&gt;open&lt;/td&gt;
+      &lt;td&gt;Decide on website structure&lt;/td&gt;
+      &lt;td&gt;2025&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+```
+:::
+:::</code></pre>
+</div>
+</div>
+
+
 
 </main> <!-- /main -->
-<script id = "quarto-html-after-body" type="application/javascript">
+<script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");
@@ -539,6 +875,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 </div> <!-- /content -->
 
-</body>
 
-</html>
+
+
+</body></html>
