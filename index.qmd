@@ -1,53 +1,251 @@
 ---
-title: "jsPsych Github Workflow"
-format:
-  html:
-    code-fold: true
+title: "jsPsych Dashboard"
+execute: 
+  cache: true
+format: 
+  dashboard: 
+    expandable: false
+    theme:
+      - simplex
+      - assets/styles/quarto.scss
+    scrolling: true
+    logo: assets/jspsych-favicon.png
+    nav-buttons:
+      - icon: github
+        href: https://github.com/jspsych/jsPsych
+      - icon: twitter
+        href: https://github.com/jspsych/jsPsych
 jupyter: python3
 ---
-
-{{< include report_scripts.qmd >}}
-
 ```{python}
-import pandas
+#| echo: false
+#| output: false
+
+import requests
+import datetime
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import httpx
+import os
+from dotenv import load_dotenv
+
 ```
 
-<div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
-  <div>
-    <h2># of Open PRs</h2>
-    ```{python}
-    iss_df[iss_df['state'] == 'open'].shape[0]
-    ```
-  </div>
-  <div>
-    <h2># of Open Issues</h2>
-    ```{python}
-    pulls_df[pulls_df['state'] == 'open'].shape[0]
-    ```
-  </div>
-  <div>
-    <h2># of Issues</h2>
-    ```{python}
-    0
-    ```
-  </div>
-  <div>
-    <h2># of Open PRs</h2>
-    ```{python}
-    0
-    ```
-  </div>
-</div>
+```{python}
+#| echo: false
+#| output: false
 
-<div style="display: flex; justify-content: space-around;">
-  <div>
-    ```{python}
-    pulls_df.head()
-    ```
-  </div>
-  <div>
-    ```{python}
-    iss_df.head()
-    ```
-  </div>
-</div>
+load_dotenv()
+
+
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+
+def fetch_api(endpoint, github_token):
+    url = f"https://api.github.com/repos/jspsych/jsPsych/{endpoint}"
+    final_data = []
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "Authorization": f'token {github_token}'
+    }
+    while url:
+        try:
+            response = httpx.get(url, headers=headers)
+            response.raise_for_status()
+
+            data = response.json()
+            for item in data:
+                final_data.append(item)
+            if 'next' in response.links:
+                url = response.links['next']['url']
+            else:
+                break
+        except httpx.RequestError as e:
+            print(f"Error fetching data from {url}: {e}")
+            return None
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error occurred: {e}")
+            return None
+
+    return final_data
+```
+
+```{python}
+#| echo: false
+#| output: false
+#| cache: true
+
+iss_cache = fetch_api("issues?&state=all&per_page=100",github_token=GITHUB_TOKEN)
+comm_cache = fetch_api("issues/comments?per_page=100",github_token=GITHUB_TOKEN)
+```
+
+```{python}
+#| echo: false
+#| output: false
+
+def create_df(type, data):
+    if type == "issues":
+        entries = []
+        for item in data:
+            entry = {
+                'number': item['number'],
+                'user': item['user']['login'],
+                'created_at': pd.to_datetime(item['created_at']),
+                'closed_at': pd.to_datetime(item['closed_at']) if item['closed_at'] else None,
+                'state': item['state'],
+                'title': item['title'],
+            }
+            entries.append(entry)
+        df = pd.DataFrame(entries)
+        df['year'] = df['created_at'].dt.year
+        df['quarter'] = df['created_at'].dt.quarter
+
+    elif type == "comments":
+        comments = []
+        for comment in data:
+            comment_entry = {
+                'issue_number': int(comment['issue_url'].split('/')[-1]),
+                'user': comment['user']['login'],
+                'created_at': pd.to_datetime(comment['created_at']),
+                'body': comment['body']
+            }
+            comments.append(comment_entry)
+        df = pd.DataFrame(comments)
+
+    elif type == "pulls":
+        entries = []
+        for item in data:
+            if 'pull_request' not in item:
+                continue
+            else:
+                entry = {
+                    'number': item['number'],
+                    'user': item['user']['login'],
+                    'created_at': pd.to_datetime(item['created_at']),
+                    'closed_at': pd.to_datetime(item['closed_at']) if item['closed_at'] else None,
+                    'state': item['state'],
+                    'title': item['title'],
+                }
+                entries.append(entry)
+        df = pd.DataFrame(entries)
+        df['year'] = df['created_at'].dt.year
+        df['quarter'] = df['created_at'].dt.quarter
+
+    else:
+        print("Invalid type")
+        return None
+
+    return df
+```
+
+```{python}
+#| echo: false
+#| output: false
+
+iss_df = create_df("issues", iss_cache)
+comm_df = create_df("comments", comm_cache)
+pulls_df = create_df("pulls", iss_cache)
+
+```
+
+```{python}
+#| echo: false
+#| output: false
+
+def analyze_interaction_times(df, comments_df):
+    if comments_df.empty:
+        print("Warning: Comments dataframe is empty")
+        df['comment_count'] = 0
+        df['avg_interaction_time'] = None
+        return df
+
+    comments_by_issue = comments_df.groupby('issue_number').agg({
+        'created_at': list,
+        'issue_number': 'count'
+    }).rename(columns={'issue_number': 'comment_count'})
+
+    df = df.merge(comments_by_issue, left_on='number', right_index=True, how='left')
+    df['comment_count'] = df['comment_count'].fillna(0)
+
+    if 'created_at_x' not in df.columns and 'created_at_y' not in df.columns:
+        df = df.rename(columns={'created_at': 'created_at_x'})
+        if 'created_at' in df.columns:
+            df['created_at_y'] = df['created_at']
+
+    def calculate_interaction_time(row):
+        if 'created_at_y' not in row or not isinstance(row['created_at_y'], list) or len(row['created_at_y']) == 0:
+            return None
+        dates = [row['created_at_x']] + row['created_at_y']
+        if row['closed_at'] is not None:
+            dates.append(row['closed_at'])
+        dates = [d for d in dates if pd.notna(d)]
+        dates = sorted(dates)
+
+        if len(dates) > 1:
+            time_diff = np.diff([d.timestamp() for d in dates])
+            return np.mean(time_diff) if len(time_diff) > 0 else None
+        return None
+
+    df['avg_interaction_time'] = df.apply(calculate_interaction_time, axis=1)
+
+    return df
+```
+
+```{python}
+#| echo: false
+#| output: false
+
+def quarterly_metrics(df):
+  return df.groupby(['year', 'quarter']).agg({
+  'number': 'count',
+  'avg_interaction_time': 'mean',
+  'comment_count': ['mean', 'sum']
+  }).round(2)
+```
+
+
+```{python}
+#| echo: false
+#| output: false
+
+def plot_quarterly_metrics(metrics, target_metric):
+  plt.figure(figsize=(10, 6))
+  for year in metrics.index.get_level_values('year').unique():
+    year_data = metrics.loc[year]
+    plt.plot(year_data.index, year_data[target_metric],
+            marker='o', label=f'Year {year}')
+
+  plt.xlabel('Quarter')
+  plt.ylabel(target_metric)
+  plt.title(f'Quarterly {target_metric} Over Time')
+  plt.legend()
+  plt.grid(True)
+  plt.show()
+
+```
+
+```{python}
+#| echo: false
+#| output: false
+def generate_report():
+  issues_analysis = analyze_interaction_times(iss_df, comm_df)
+  pulls_analysis = analyze_interaction_times(pulls_df, comm_df)
+  issues_quarterly = quarterly_metrics(issues_analysis)
+  pulls_quarterly = quarterly_metrics(pulls_analysis)
+  return issues_analysis, pulls_analysis, issues_quarterly, pulls_quarterly
+```
+
+```{python}
+#| echo: false
+#| output: false
+my_issues_analysis, my_prs_analysis, my_issues_quarterly, my_prs_quarterly = generate_report()
+```
+
+# Index
+
+# Issues
+
+# Pull Requests
+
+# Discussions
+
