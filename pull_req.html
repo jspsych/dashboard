@@ -92,6 +92,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -164,23 +167,274 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Hello, this page will showcase the dashboard for pull requests!</p>
 <p>Functions</p>
-<div class="cell" data-execution_count="11">
+<div class="cell" data-execution_count="8">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#[] make a param for Val's code</span></span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>coreTeam <span class="op">=</span> [<span class="st">'jodeleeuw'</span>, <span class="st">'becky-gilbert'</span>, <span class="st">'bjoluc'</span>, <span class="st">'cherriechang'</span>, <span class="st">'jadeddelta'</span>, <span class="st">'github-actions[bot]'</span>]</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'avgMergeTime'</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'avgInteractionTime'</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'closed without merging'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> open_awhile(df):</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  df <span class="op">=</span> df.loc[df[<span class="st">'state'</span>] <span class="op">==</span> <span class="st">'open'</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  df <span class="op">=</span> df.loc[df[<span class="st">'year'</span>] <span class="op">&lt;</span> <span class="dv">2024</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(<span class="ss">f"There are </span><span class="sc">{</span><span class="bu">len</span>(df)<span class="sc">}</span><span class="ss"> issues which are left open since before 2024"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> df</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> from_community(df):</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df.drop(df[df[<span class="st">'user'</span>].isin(coreTeam)].index)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>open_awhile(my_prs_analysis)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>There are 6 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">pull_request</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th data-quarto-table-cell-role="th">merge_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">108</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">133</td>
+<td>2877</td>
+<td>bjoluc</td>
+<td>2022-11-21 17:44:54+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Code-based plugin parameter docs</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-21 17:44:58+00:00, 2022-11-21 19:12:3...</td>
+<td>3.0</td>
+<td>201.765320</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">138</td>
+<td>2847</td>
+<td>jadeddelta</td>
+<td>2022-11-01 23:31:50+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Handle permission rejection from camera/microp...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-01 23:31:53+00:00]</td>
+<td>1.0</td>
+<td>0.000035</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">142</td>
+<td>2822</td>
+<td>mgrewe</td>
+<td>2022-10-17 13:59:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>feat: add callbacks on experiment finish</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-10-17 13:59:33+00:00, 2022-10-19 14:17:3...</td>
+<td>4.0</td>
+<td>0.909893</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">207</td>
+<td>2360</td>
+<td>gali1998</td>
+<td>2021-11-27 18:40:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add `hide_slider_while_playing` parameter</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-11-27 18:40:51+00:00, 2021-11-27 19:52:4...</td>
+<td>6.0</td>
+<td>1.498997</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">267</td>
+<td>1954</td>
+<td>keshavpabbi</td>
+<td>2021-06-30 16:56:59+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Modified Visual Search Circle Plugin</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>2</td>
+<td>[2021-06-30 17:05:58+00:00, 2021-07-02 17:14:3...</td>
+<td>13.0</td>
+<td>7.456574</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="13">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>open_awhile(from_community(my_prs_analysis))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>There are 4 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">pull_request</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th data-quarto-table-cell-role="th">merge_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">108</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">142</td>
+<td>2822</td>
+<td>mgrewe</td>
+<td>2022-10-17 13:59:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>feat: add callbacks on experiment finish</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-10-17 13:59:33+00:00, 2022-10-19 14:17:3...</td>
+<td>4.0</td>
+<td>0.909893</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">207</td>
+<td>2360</td>
+<td>gali1998</td>
+<td>2021-11-27 18:40:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add `hide_slider_while_playing` parameter</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-11-27 18:40:51+00:00, 2021-11-27 19:52:4...</td>
+<td>6.0</td>
+<td>1.498997</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">267</td>
+<td>1954</td>
+<td>keshavpabbi</td>
+<td>2021-06-30 16:56:59+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Modified Visual Search Circle Plugin</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>2</td>
+<td>[2021-06-30 17:05:58+00:00, 2021-07-02 17:14:3...</td>
+<td>13.0</td>
+<td>7.456574</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="14">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#[] make a param for Val's code</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'avgMergeTime'</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'avgInteractionTime'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plot_history(my_prs_quarterly, <span class="st">'closed without merging'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="pull_req_files/figure-html/cell-12-output-1.png" width="816" height="568"></p>
+<p><img src="pull_req_files/figure-html/cell-15-output-1.png" width="816" height="568"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="pull_req_files/figure-html/cell-12-output-2.png" width="816" height="568"></p>
+<p><img src="pull_req_files/figure-html/cell-15-output-2.png" width="816" height="568"></p>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="pull_req_files/figure-html/cell-12-output-3.png" width="808" height="568"></p>
+<p><img src="pull_req_files/figure-html/cell-15-output-3.png" width="808" height="568"></p>
 </div>
 </div>
 
