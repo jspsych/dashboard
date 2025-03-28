@@ -11,6 +11,12 @@ Hello, this page will showcase the dashboard for pull requests!
 {{< include report_scripts.qmd >}}
 
 ```{python}
+open_awhile(my_prs_analysis)
+```
+```{python}
+open_awhile(from_community(my_prs_analysis))
+```
+```{python}
 
 #[] make a param for Val's code
 
