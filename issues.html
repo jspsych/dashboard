@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -168,14 +134,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Hello, this page will showcase the dashboard for issues</p>
 <p>Functions</p>
 <div class="cell" data-execution_count="12">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [] make a paramteter that'll show the delta from Val's code</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># [] fix the graph, and organise the script </span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  </span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>my_issues_quarterly</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>There are 82 issues which are left open since before 2024</code></pre>
+</div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <div>
 
@@ -184,356 +145,696 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">openedIssues</th>
-<th data-quarto-table-cell-role="th">avgInteractionTime</th>
-<th data-quarto-table-cell-role="th">avgInteraction</th>
-<th data-quarto-table-cell-role="th">openedIssuesClosed</th>
-</tr>
-<tr class="odd">
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
 <th data-quarto-table-cell-role="th">year</th>
 <th data-quarto-table-cell-role="th">quarter</th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2013</td>
-<td data-quarto-table-cell-role="th">4</td>
-<td>13</td>
-<td>120.11</td>
-<td>2.08</td>
-<td>13</td>
+<td data-quarto-table-cell-role="th">216</td>
+<td>3159</td>
+<td>Tongzhao9417</td>
+<td>2023-10-20 09:11:05+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Comprehension Items with multi-choice</td>
+<td>2023</td>
+<td>4</td>
+<td>[2023-10-20 09:14:25+00:00, 2023-10-20 09:34:2...</td>
+<td>4.0</td>
+<td>6.795888</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2014</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>25</td>
-<td>177.09</td>
-<td>0.64</td>
-<td>25</td>
+<td data-quarto-table-cell-role="th">217</td>
+<td>3157</td>
+<td>jodeleeuw</td>
+<td>2023-10-19 15:32:25+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Automatically handling URLs in `/docs/demos` t...</td>
+<td>2023</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>18</td>
-<td>59.94</td>
-<td>1.11</td>
-<td>18</td>
+<td data-quarto-table-cell-role="th">218</td>
+<td>3155</td>
+<td>Saurav-K-Aryal</td>
+<td>2023-10-18 16:19:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPsych.extensions.webgazer.showPredictions() ...</td>
+<td>2023</td>
+<td>4</td>
+<td>[2024-04-05 13:19:37+00:00]</td>
+<td>1.0</td>
+<td>169.874896</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>18</td>
-<td>3.32</td>
-<td>1.00</td>
-<td>18</td>
+<td data-quarto-table-cell-role="th">222</td>
+<td>3149</td>
+<td>becky-gilbert</td>
+<td>2023-10-06 17:34:10+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add optional callback params to `record-video`...</td>
+<td>2023</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>28</td>
-<td>31.37</td>
-<td>2.43</td>
-<td>27</td>
+<td data-quarto-table-cell-role="th">230</td>
+<td>3121</td>
+<td>bjoluc</td>
+<td>2023-09-06 15:13:29+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Remove the `canvas` dependency from `@jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2015</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>24</td>
-<td>42.28</td>
-<td>0.62</td>
-<td>24</td>
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>29</td>
-<td>23.91</td>
-<td>1.31</td>
-<td>29</td>
+<td data-quarto-table-cell-role="th">1112</td>
+<td>375</td>
+<td>jodeleeuw</td>
+<td>2017-04-16 03:35:32+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Automated browser compatibility testing</td>
+<td>2017</td>
+<td>2</td>
+<td>[2018-03-16 03:08:22+00:00]</td>
+<td>1.0</td>
+<td>333.981134</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>28</td>
-<td>79.46</td>
-<td>2.21</td>
-<td>28</td>
+<td data-quarto-table-cell-role="th">1129</td>
+<td>357</td>
+<td>jodeleeuw</td>
+<td>2017-03-21 02:55:44+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>load custom CSS method for pluginAPI</td>
+<td>2017</td>
+<td>1</td>
+<td>[2020-02-18 15:18:22+00:00, 2020-02-18 15:24:4...</td>
+<td>2.0</td>
+<td>532.260058</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>22</td>
-<td>100.57</td>
-<td>0.68</td>
-<td>22</td>
+<td data-quarto-table-cell-role="th">1145</td>
+<td>341</td>
+<td>jodeleeuw</td>
+<td>2017-02-21 16:38:51+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>add centralized audio playing command in plugi...</td>
+<td>2017</td>
+<td>1</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2016</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>37</td>
-<td>144.15</td>
-<td>1.43</td>
-<td>37</td>
+<td data-quarto-table-cell-role="th">1172</td>
+<td>314</td>
+<td>jodeleeuw</td>
+<td>2016-12-31 18:17:24+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>add multiple branch option for timelines</td>
+<td>2016</td>
+<td>4</td>
+<td>[2017-04-04 16:36:06+00:00, 2017-04-05 02:59:5...</td>
+<td>4.0</td>
+<td>625.728715</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>20</td>
-<td>38.23</td>
-<td>1.35</td>
-<td>20</td>
+<td data-quarto-table-cell-role="th">1400</td>
+<td>75</td>
+<td>jodeleeuw</td>
+<td>2014-10-06 14:05:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Use requestAnimationFrame when possible to pse...</td>
+<td>2014</td>
+<td>4</td>
+<td>[2014-11-17 15:14:08+00:00, 2014-11-17 15:44:2...</td>
+<td>48.0</td>
+<td>47.986543</td>
+</tr>
+</tbody>
+</table>
+
+<p>82 rows × 11 columns</p>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="13">
+<div class="cell-output cell-output-stdout">
+<pre><code>There are 35 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">216</td>
+<td>3159</td>
+<td>Tongzhao9417</td>
+<td>2023-10-20 09:11:05+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Comprehension Items with multi-choice</td>
+<td>2023</td>
+<td>4</td>
+<td>[2023-10-20 09:14:25+00:00, 2023-10-20 09:34:2...</td>
+<td>4.0</td>
+<td>6.795888</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>21</td>
-<td>134.87</td>
-<td>1.90</td>
-<td>21</td>
+<td data-quarto-table-cell-role="th">218</td>
+<td>3155</td>
+<td>Saurav-K-Aryal</td>
+<td>2023-10-18 16:19:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPsych.extensions.webgazer.showPredictions() ...</td>
+<td>2023</td>
+<td>4</td>
+<td>[2024-04-05 13:19:37+00:00]</td>
+<td>1.0</td>
+<td>169.874896</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>21</td>
-<td>129.19</td>
-<td>2.10</td>
-<td>20</td>
+<td data-quarto-table-cell-role="th">234</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2017</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>48</td>
-<td>100.58</td>
-<td>1.42</td>
-<td>46</td>
+<td data-quarto-table-cell-role="th">246</td>
+<td>3072</td>
+<td>nikbpetrov</td>
+<td>2023-06-20 12:28:02+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Simulation mode: survey-multi-select does not ...</td>
+<td>2023</td>
+<td>2</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>42</td>
-<td>143.21</td>
-<td>1.90</td>
-<td>38</td>
+<td data-quarto-table-cell-role="th">281</td>
+<td>2910</td>
+<td>nikbpetrov</td>
+<td>2022-12-20 12:22:55+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Allow editing trials' parameters during simula...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2023-05-04 02:05:59+00:00, 2023-05-04 05:37:4...</td>
+<td>3.0</td>
+<td>45.009174</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>65</td>
-<td>96.73</td>
-<td>0.46</td>
-<td>65</td>
+<td data-quarto-table-cell-role="th">289</td>
+<td>2889</td>
+<td>St-ZFeng</td>
+<td>2022-12-02 12:34:54+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Validation parameter are not allowed for the q...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-12-02 16:52:31+00:00, 2022-12-03 08:43:3...</td>
+<td>3.0</td>
+<td>26.676821</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>12</td>
-<td>68.98</td>
-<td>1.58</td>
-<td>12</td>
+<td data-quarto-table-cell-role="th">296</td>
+<td>2868</td>
+<td>nikbpetrov</td>
+<td>2022-11-17 16:02:33+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Experiment-wide keyboard tracking extension (&amp;...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-17 16:16:59+00:00, 2022-11-17 16:47:4...</td>
+<td>2.0</td>
+<td>0.015666</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2018</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>24</td>
-<td>167.95</td>
-<td>4.62</td>
-<td>23</td>
+<td data-quarto-table-cell-role="th">297</td>
+<td>2864</td>
+<td>alisdt</td>
+<td>2022-11-16 10:39:16+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>CSV output incorrect when stimulus is in a rig...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-16 10:39:42+00:00, 2022-11-16 10:41:0...</td>
+<td>4.0</td>
+<td>1.758533</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>31</td>
-<td>75.52</td>
-<td>2.06</td>
-<td>30</td>
+<td data-quarto-table-cell-role="th">306</td>
+<td>2845</td>
+<td>rsssss12</td>
+<td>2022-10-31 21:01:36+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPsych IAT D-Score calculation</td>
+<td>2022</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>24</td>
-<td>88.71</td>
-<td>1.46</td>
-<td>22</td>
+<td data-quarto-table-cell-role="th">310</td>
+<td>2822</td>
+<td>mgrewe</td>
+<td>2022-10-17 13:59:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>feat: add callbacks on experiment finish</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-10-17 13:59:33+00:00, 2022-10-19 14:17:3...</td>
+<td>4.0</td>
+<td>0.909893</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>10</td>
-<td>61.47</td>
-<td>1.10</td>
-<td>9</td>
+<td data-quarto-table-cell-role="th">319</td>
+<td>2795</td>
+<td>EvKhristoforova</td>
+<td>2022-09-29 01:55:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>How to let participants see themselved while u...</td>
+<td>2022</td>
+<td>3</td>
+<td>[2022-09-29 02:52:20+00:00]</td>
+<td>1.0</td>
+<td>0.039491</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2019</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>19</td>
-<td>81.96</td>
-<td>3.05</td>
-<td>17</td>
+<td data-quarto-table-cell-role="th">330</td>
+<td>2761</td>
+<td>Alexpathy</td>
+<td>2022-09-07 09:44:45+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Features of Survey plugin not working on Cogni...</td>
+<td>2022</td>
+<td>3</td>
+<td>[2024-01-06 00:03:49+00:00]</td>
+<td>1.0</td>
+<td>485.596574</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>17</td>
-<td>85.73</td>
-<td>3.41</td>
-<td>17</td>
+<td data-quarto-table-cell-role="th">334</td>
+<td>2739</td>
+<td>moramaldonado</td>
+<td>2022-08-09 09:53:41+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Repeated gifs not moving</td>
+<td>2022</td>
+<td>3</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>28</td>
-<td>118.21</td>
-<td>2.14</td>
-<td>26</td>
+<td data-quarto-table-cell-role="th">335</td>
+<td>2736</td>
+<td>Shaobin-Jiang</td>
+<td>2022-08-02 07:09:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Removal of on_data_update event</td>
+<td>2022</td>
+<td>3</td>
+<td>[2022-10-13 18:46:06+00:00, 2022-10-14 15:24:3...</td>
+<td>5.0</td>
+<td>92.775891</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>8</td>
-<td>115.64</td>
-<td>1.12</td>
-<td>8</td>
+<td data-quarto-table-cell-role="th">346</td>
+<td>2702</td>
+<td>mrzdcmps</td>
+<td>2022-07-12 12:58:36+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>survey plugin likert-table horizontal scrolling</td>
+<td>2022</td>
+<td>3</td>
+<td>[2024-05-09 23:01:05+00:00]</td>
+<td>1.0</td>
+<td>667.418391</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2020</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>14</td>
-<td>101.79</td>
-<td>2.50</td>
-<td>14</td>
+<td data-quarto-table-cell-role="th">351</td>
+<td>2691</td>
+<td>siddharthmisra89</td>
+<td>2022-06-30 18:44:51+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>google input tools data in survey plugin</td>
+<td>2022</td>
+<td>2</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>28</td>
-<td>102.21</td>
-<td>2.82</td>
-<td>27</td>
+<td data-quarto-table-cell-role="th">359</td>
+<td>2661</td>
+<td>ponrawee</td>
+<td>2022-06-09 05:08:48+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>getAudioBuffer returning "tmp" when audio is n...</td>
+<td>2022</td>
+<td>2</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>46</td>
-<td>26.88</td>
-<td>3.00</td>
-<td>45</td>
+<td data-quarto-table-cell-role="th">363</td>
+<td>2648</td>
+<td>miguelo93</td>
+<td>2022-05-27 16:47:34+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Use the slider as dynamic parameter</td>
+<td>2022</td>
+<td>2</td>
+<td>[2022-05-27 16:56:20+00:00, 2022-05-27 16:58:1...</td>
+<td>2.0</td>
+<td>0.003727</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>54</td>
-<td>21.70</td>
-<td>2.61</td>
-<td>48</td>
+<td data-quarto-table-cell-role="th">416</td>
+<td>2501</td>
+<td>pmavros</td>
+<td>2022-02-08 06:53:15+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>video breaks source link</td>
+<td>2022</td>
+<td>1</td>
+<td>[2022-02-08 08:44:05+00:00, 2022-02-09 05:31:0...</td>
+<td>2.0</td>
+<td>0.471481</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2021</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>94</td>
-<td>30.74</td>
-<td>3.07</td>
-<td>87</td>
+<td data-quarto-table-cell-role="th">434</td>
+<td>2411</td>
+<td>schas59</td>
+<td>2021-12-22 13:23:33+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Using Webgazer.js in cognition.run: wegbgazerd...</td>
+<td>2021</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>46</td>
-<td>23.29</td>
-<td>3.13</td>
-<td>44</td>
+<td data-quarto-table-cell-role="th">455</td>
+<td>2360</td>
+<td>gali1998</td>
+<td>2021-11-27 18:40:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add `hide_slider_while_playing` parameter</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-11-27 18:40:51+00:00, 2021-11-27 19:52:4...</td>
+<td>6.0</td>
+<td>1.498997</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>65</td>
-<td>12.56</td>
-<td>2.69</td>
-<td>60</td>
+<td data-quarto-table-cell-role="th">476</td>
+<td>2275</td>
+<td>FedericoCurzel</td>
+<td>2021-10-28 13:11:38+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPysch and Triggers - Lab Streaming Layer</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-10-28 13:21:22+00:00, 2021-10-28 14:09:2...</td>
+<td>12.0</td>
+<td>4.074319</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>63</td>
-<td>21.47</td>
-<td>2.59</td>
-<td>54</td>
+<td data-quarto-table-cell-role="th">509</td>
+<td>2138</td>
+<td>myrtevos</td>
+<td>2021-09-06 14:18:03+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Eye tracking - timing of trial/stimulus onset ...</td>
+<td>2021</td>
+<td>3</td>
+<td>[2021-09-22 15:45:20+00:00]</td>
+<td>1.0</td>
+<td>16.060613</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2022</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>33</td>
-<td>62.58</td>
-<td>1.09</td>
-<td>30</td>
+<td data-quarto-table-cell-role="th">550</td>
+<td>1994</td>
+<td>Shaobin-Jiang</td>
+<td>2021-07-15 07:02:55+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Chinese version of the documentation</td>
+<td>2021</td>
+<td>3</td>
+<td>[2021-07-16 18:01:14+00:00, 2021-07-21 16:16:4...</td>
+<td>3.0</td>
+<td>63.942820</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>49</td>
-<td>21.17</td>
-<td>1.78</td>
-<td>43</td>
+<td data-quarto-table-cell-role="th">551</td>
+<td>1993</td>
+<td>nikbpetrov</td>
+<td>2021-07-14 18:45:50+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Asynchronous loading of images during experime...</td>
+<td>2021</td>
+<td>3</td>
+<td>[2021-07-17 09:28:12+00:00, 2021-08-03 23:56:2...</td>
+<td>5.0</td>
+<td>96.549405</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>32</td>
-<td>74.94</td>
-<td>1.62</td>
-<td>25</td>
+<td data-quarto-table-cell-role="th">561</td>
+<td>1954</td>
+<td>keshavpabbi</td>
+<td>2021-06-30 16:56:59+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Modified Visual Search Circle Plugin</td>
+<td>2021</td>
+<td>2</td>
+<td>[2021-06-30 17:05:58+00:00, 2021-07-02 17:14:3...</td>
+<td>13.0</td>
+<td>7.456574</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>41</td>
-<td>60.53</td>
-<td>2.63</td>
-<td>33</td>
+<td data-quarto-table-cell-role="th">603</td>
+<td>1723</td>
+<td>Brice-xCIT</td>
+<td>2021-04-12 15:02:52+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>virtual-chinrest does not support large viewin...</td>
+<td>2021</td>
+<td>2</td>
+<td>[2021-04-12 16:43:19+00:00]</td>
+<td>1.0</td>
+<td>0.069757</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2023</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>13</td>
-<td>54.06</td>
-<td>1.15</td>
-<td>12</td>
+<td data-quarto-table-cell-role="th">619</td>
+<td>1633</td>
+<td>JAQuent</td>
+<td>2021-03-13 10:59:29+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Adding `minimum_trial_duration` parameter to p...</td>
+<td>2021</td>
+<td>1</td>
+<td>[2021-03-25 23:01:36+00:00, 2021-03-26 13:01:2...</td>
+<td>7.0</td>
+<td>3.897525</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>21</td>
-<td>62.33</td>
-<td>1.19</td>
-<td>18</td>
+<td data-quarto-table-cell-role="th">620</td>
+<td>1628</td>
+<td>juliameehan</td>
+<td>2021-03-12 04:00:55+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>fullscreen enter and exit</td>
+<td>2021</td>
+<td>1</td>
+<td>[2021-03-12 22:35:26+00:00, 2021-03-14 20:37:4...</td>
+<td>5.0</td>
+<td>0.937081</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>21</td>
-<td>42.89</td>
-<td>1.81</td>
-<td>19</td>
+<td data-quarto-table-cell-role="th">623</td>
+<td>1615</td>
+<td>kupiqu</td>
+<td>2021-03-08 18:10:56+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>refresh glitch in new slider</td>
+<td>2021</td>
+<td>1</td>
+<td>[2021-03-08 18:17:53+00:00, 2021-03-08 18:23:2...</td>
+<td>3.0</td>
+<td>0.003866</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>27</td>
-<td>41.42</td>
-<td>1.67</td>
-<td>23</td>
+<td data-quarto-table-cell-role="th">674</td>
+<td>1445</td>
+<td>egaudrain</td>
+<td>2021-02-01 21:29:40+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Audio fails to start in Safari 14.0.2</td>
+<td>2021</td>
+<td>1</td>
+<td>[2021-02-01 22:41:58+00:00, 2021-02-01 23:04:4...</td>
+<td>19.0</td>
+<td>38.430829</td>
 </tr>
 <tr class="even">
-<td rowspan="4" data-quarto-table-cell-role="th" data-valign="top">2024</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>29</td>
-<td>9.14</td>
-<td>2.14</td>
-<td>21</td>
+<td data-quarto-table-cell-role="th">734</td>
+<td>1192</td>
+<td>gorkang</td>
+<td>2020-11-13 12:12:58+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Parameter to add a number showing the slider v...</td>
+<td>2020</td>
+<td>4</td>
+<td>[2020-11-20 17:38:29+00:00]</td>
+<td>1.0</td>
+<td>7.226053</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">2</td>
-<td>44</td>
-<td>7.72</td>
-<td>2.18</td>
-<td>34</td>
+<td data-quarto-table-cell-role="th">856</td>
+<td>651</td>
+<td>CrumpLab</td>
+<td>2019-08-15 19:03:49+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>showing slider value during slider movement</td>
+<td>2019</td>
+<td>3</td>
+<td>[2019-08-15 19:05:54+00:00, 2020-04-06 17:06:0...</td>
+<td>4.0</td>
+<td>212.973490</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">3</td>
-<td>49</td>
-<td>7.95</td>
-<td>1.84</td>
-<td>27</td>
+<td data-quarto-table-cell-role="th">954</td>
+<td>540</td>
+<td>spencerking</td>
+<td>2018-06-15 16:19:27+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Allow for preload progress bar to be a looping...</td>
+<td>2018</td>
+<td>2</td>
+<td>[2019-07-09 17:17:07+00:00]</td>
+<td>1.0</td>
+<td>389.040046</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">4</td>
-<td>46</td>
-<td>6.68</td>
-<td>1.11</td>
-<td>28</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">2025</td>
-<td data-quarto-table-cell-role="th">1</td>
-<td>28</td>
-<td>2.50</td>
-<td>1.29</td>
-<td>18</td>
+<td data-quarto-table-cell-role="th">1092</td>
+<td>397</td>
+<td>jtg567</td>
+<td>2017-06-19 23:59:44+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Preload of visual search plugin stimuli effect...</td>
+<td>2017</td>
+<td>2</td>
+<td>[2017-06-20 01:50:43+00:00, 2017-06-20 17:29:1...</td>
+<td>4.0</td>
+<td>0.191308</td>
 </tr>
 </tbody>
 </table>
@@ -541,13 +842,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div class="cell" data-execution_count="13">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plot_quarterly_metrics(my_issues_quarterly, <span class="st">'avgInteractionTime'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="cell" data-execution_count="14">
 <div class="cell-output cell-output-display">
-<p><img src="issues_files/figure-html/cell-14-output-1.png" width="816" height="523"></p>
+<p><img src="issues_files/figure-html/cell-15-output-1.png" width="816" height="568"></p>
 </div>
 </div>
 
