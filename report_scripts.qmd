@@ -210,6 +210,19 @@ def quarterly_metrics(df):
   return issue_agg(df)
 ```
 
+```{python}
+coreTeam = ['jodeleeuw', 'becky-gilbert', 'bjoluc', 'cherriechang', 'jadeddelta', 'github-actions[bot]']
+
+def open_awhile(df):
+  df = df.loc[df['state'] == 'open']
+  df = df.loc[df['year'] < 2024]
+  print(f"There are {len(df)} issues which are left open since before 2024")
+  return df
+
+def from_community(df):
+    return df.drop(df[df['user'].isin(coreTeam)].index)
+```
+
 
 ```{python}
 #| echo: false
