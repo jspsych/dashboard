@@ -14,6 +14,5 @@ Hello, this page will showcase the dashboard for pull requests!
 
 #[] make a param for Val's code
 
-my_prs_quarterly
-my_prs_analysis
+plot_history(my_prs_quarterly, 'avgMergeTime')
 ```
