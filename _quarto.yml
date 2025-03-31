@@ -4,3 +4,5 @@ project:
 execute:
   cache: true
 format: asciidoc
+website:
+  site-url: "https://smpdl.github.io/jsPsych-Dashboard/" 
