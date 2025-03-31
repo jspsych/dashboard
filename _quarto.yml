@@ -8,8 +8,4 @@ execute:
   cache: true
 format: dashboard
 website:
-<<<<<<< HEAD
   site-url: "https://smpdl.github.io/jsPsych-Dashboard/" 
-=======
-  site-url: "https://smpdl.github.io/jsPsych-Dashboard/" 
->>>>>>> 31f033dfa4c5d8cdce6c223418c66361ae4b312b
