@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: docs
+  resources:
+    - assets\style\quarto.scss
+    - assets\jspsych-favicon.png
 execute:
   cache: true
 format: asciidoc
