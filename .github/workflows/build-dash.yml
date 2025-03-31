@@ -1,39 +1,33 @@
+name: Render and Publish
 on:
   push:
     branches:
-      - main
-
-name: build-dash
-
-permissions:
-  contents: write
-
+      - test 
 jobs:
-  build-dash:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    steps:
+  build-deploy:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Check out repository
+          uses: actions/checkout@v3
+          
+        - name: Set up Quarto
+          uses: quarto-dev/quarto-actions/setup@v2
+          with:
+            version: 1.3.340
 
-    - uses: actions/checkout@v3
+        - name: Install Python and Dependencies
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.10'
+            cache: 'pip'
+        - run: pip install jupyter
+        - run: pip install -r requirements.txt
 
-    - name: Set up Quarto
-      uses: quarto-dev/quarto-actions/setup@v2
-      with:
-        version: pre-release
-
-    - name: Cache targets data
-      uses: actions/cache@v3
-      with:
-          path: _targets
-          key: ${{ runner.os }}-targets-v1-${{ hashFiles('**/cache.log') }}
-          restore-keys: |
-              ${{ runner.os }}-targets-v1-
-                
-    - name: Publish to Quarto Pub
-      uses: quarto-dev/quarto-actions/publish@v2
-      with:
-        target: quarto-pub
-        render: false
-        path: index.qmd
-        QUARTO_PUB_AUTH_TOKEN: ${{secrets.QUARTO_PUB_AUTH_TOKEN }}
+        - name: Publish to GitHub Pages (and render)
+          uses: quarto-dev/quarto-actions/publish@v2
+          with:
+            target: gh-pages
+          env:
+            GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
