@@ -3,3 +3,5 @@ datetime
 pandas 
 numpy 
 matplotlib
+jupyter-cache
+python-dotenv

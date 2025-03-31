@@ -103,7 +103,7 @@ def create_df(type, data):
         comments = []
         for comment in data:
             comment_entry = {
-                'number': int(comment['issue_url'].split('/')[-1]),
+                'issue_number': int(comment['issue_url'].split('/')[-1]),
                 'user': comment['user']['login'],
                 'created_at': pd.to_datetime(comment['created_at']),
                 'body': comment['body']
@@ -124,7 +124,6 @@ def create_df(type, data):
                     'closed_at': pd.to_datetime(item['closed_at']) if item['closed_at'] else None,
                     'state': item['state'],
                     'title': item['title'],
-                    'pull_request': item['pull_request']
                 }
                 entries.append(entry)
         df = pd.DataFrame(entries)
@@ -199,7 +198,6 @@ def analyze_interaction_times(df, comments_df):
     df['merge_time'] = df.apply(calculate_merge_time, axis=1)
 
   return df
-
 ```
 
 ```{python}
@@ -230,7 +228,6 @@ def quarterly_metrics(df):
   if 'merge_time' in df.columns:
     return pr_agg(df)
   return issue_agg(df)
-
 ```
 
 
@@ -286,7 +283,6 @@ def plot_history(metrics, target_metric):
 ```{python}
 #| echo: false
 #| output: false
-
 def generate_report():
   issues_analysis = analyze_interaction_times(iss_df, comm_df)
   pulls_analysis = analyze_interaction_times(pulls_df, comm_df)
