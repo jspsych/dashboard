@@ -1,6 +1,8 @@
 project:
-  type: auto
+  type: website
   output-dir: docs
 execute:
   cache: true
-format: html
+format:
+  html:
+    page-layout: dashboard
