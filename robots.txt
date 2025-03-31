@@ -1,1 +1,1 @@
-Sitemap: https://github.com/smpdl/jsPsych-Dashboard/sitemap.xml
+Sitemap: https://smpdl.github.io/jsPsych-Dashboard/sitemap.xml
