@@ -103,7 +103,7 @@ def create_df(type, data):
         comments = []
         for comment in data:
             comment_entry = {
-                'issue_number': int(comment['issue_url'].split('/')[-1]),
+                'number': int(comment['issue_url'].split('/')[-1]),
                 'user': comment['user']['login'],
                 'created_at': pd.to_datetime(comment['created_at']),
                 'body': comment['body']
@@ -124,6 +124,7 @@ def create_df(type, data):
                     'closed_at': pd.to_datetime(item['closed_at']) if item['closed_at'] else None,
                     'state': item['state'],
                     'title': item['title'],
+                    'pull_request': item['pull_request']
                 }
                 entries.append(entry)
         df = pd.DataFrame(entries)
