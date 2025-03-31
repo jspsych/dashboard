@@ -6,6 +6,6 @@ project:
     - assets\jspsych-favicon.png
 execute:
   cache: true
-format: asciidoc
+format: dashboard
 website:
   site-url: "https://smpdl.github.io/jsPsych-Dashboard/" 

@@ -3,7 +3,7 @@ title: "jsPsych Dashboard"
 execute: 
   cache: true
 format: 
-  asciidoc: 
+  dashboard: 
     theme:
       - simplex
       - assets/styles/quarto.scss
