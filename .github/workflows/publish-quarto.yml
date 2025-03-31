@@ -2,7 +2,7 @@ name: Render and Publish
 on:
   push:
     branches:
-      - test 
+      - main 
 jobs:
   build-deploy:
       runs-on: ubuntu-latest
@@ -28,6 +28,6 @@ jobs:
         - name: Publish to GitHub Pages (and render)
           uses: quarto-dev/quarto-actions/publish@v2
           with:
-            target: gh-pages
+            target: gh-pages 
           env:
             GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN }}
