@@ -151,57 +151,102 @@ pulls_df = create_df("pulls", iss_cache)
 #| echo: false
 #| output: false
 
+def calculate_interaction_time(row):
+  if pd.isna(row)['created_at_y']:
+    return None
+  dates = [row['created_at_x']] + row['created_at_y']
+  if row['closed_at'] is not None:
+    dates.append(row['closed_at'])
+  dates = [d for d in dates if pd.notna(d)] # --> is this step necessary?
+  dates = sorted(dates)
+  if len(dates) > 1:
+    time_diff = np.diff([d.timestamp() for d in dates])
+    time_diff = time_diff / (60 * 60 * 24) # convert to days
+    return np.mean(time_diff) if len(time_diff) > 0 else None
+  return None
+
+def calculate_merge_time(row):
+  if pd.isna(row['pull_request']['merged_at']):
+    return None
+  created_at = row['created_at_x'].timestamp()
+  pr = row['pull_request']
+  merged_at = pd.to_datetime(pr['merged_at']).timestamp()
+  return (merged_at - created_at) / (60 * 60 * 24) # convert to days
+
 def analyze_interaction_times(df, comments_df):
-    if comments_df.empty:
-        print("Warning: Comments dataframe is empty")
-        df['comment_count'] = 0
-        df['avg_interaction_time'] = None
-        return df
-
-    comments_by_issue = comments_df.groupby('issue_number').agg({
-        'created_at': list,
-        'issue_number': 'count'
-    }).rename(columns={'issue_number': 'comment_count'})
-
-    df = df.merge(comments_by_issue, left_on='number', right_index=True, how='left')
-    df['comment_count'] = df['comment_count'].fillna(0)
-
-    if 'created_at_x' not in df.columns and 'created_at_y' not in df.columns:
-        df = df.rename(columns={'created_at': 'created_at_x'})
-        if 'created_at' in df.columns:
-            df['created_at_y'] = df['created_at']
-
-    def calculate_interaction_time(row):
-        if 'created_at_y' not in row or not isinstance(row['created_at_y'], list) or len(row['created_at_y']) == 0:
-            return None
-        dates = [row['created_at_x']] + row['created_at_y']
-        if row['closed_at'] is not None:
-            dates.append(row['closed_at'])
-        dates = [d for d in dates if pd.notna(d)]
-        dates = sorted(dates)
-
-        if len(dates) > 1:
-            time_diff = np.diff([d.timestamp() for d in dates])
-            return np.mean(time_diff) if len(time_diff) > 0 else None
-        return None
-
-    df['avg_interaction_time'] = df.apply(calculate_interaction_time, axis=1)
-
+  if comments_df.empty:
+    print("Warning: Comments dataframe is empty")
+    df['comment_count'] = 0
+    df['avg_interaction_time'] = None
     return df
+
+  comments_by_issue = comments_df.groupby('number').agg({
+    'created_at': list,
+    'number': 'count'
+  }).rename(columns={'number': 'comment_count'})
+
+  df = df.merge(comments_by_issue, left_on='number', right_index=True, how='left')
+  df['comment_count'] = df['comment_count'].fillna(0)
+
+  if 'created_at_x' not in df.columns and 'created_at_y' not in df.columns:
+    df = df.rename(columns={'created_at': 'created_at_x'})
+    if 'created_at' in df.columns:
+      df['created_at_y'] = df['created_at']
+  
+  df['avg_interaction_time'] = df.apply(calculate_interaction_time, axis=1)
+  if 'pull_request' in df.columns:
+    df['merge_time'] = df.apply(calculate_merge_time, axis=1)
+
+  return df
 ```
 
 ```{python}
 #| echo: false
 #| output: false
 
+def issue_agg(df):
+  return df.groupby(['year', 'quarter']).agg(
+    openedIssues = ('number', 'count'),
+    avgInteractionTime = ('avg_interaction_time', 'mean'),
+    avgInteraction = ('comment_count', 'mean'),
+    openedIssuesClosed = ('closed_at', 'count')
+  ).round(2)
+
+def pr_agg(df):
+  df = df.groupby(['year', 'quarter']).agg(
+    openedPRs = ('number', 'count'),
+    avgInteractionTime = ('avg_interaction_time', 'mean'),
+    avgInteraction = ('comment_count', 'mean'),
+    openedPRsClosed = ('closed_at', 'count'),
+    openedPRsMerged = ('merge_time', 'count'),
+    avgMergeTime = ('merge_time', 'mean')
+  ).round(2)
+  df['closed without merging'] = df['openedPRsClosed'] - df['openedPRsMerged']
+  return df
+
 def quarterly_metrics(df):
-  return df.groupby(['year', 'quarter']).agg({
-  'number': 'count',
-  'avg_interaction_time': 'mean',
-  'comment_count': ['mean', 'sum']
-  }).round(2)
+  if 'merge_time' in df.columns:
+    return pr_agg(df)
+  return issue_agg(df)
 ```
 
+
+```{python}
+#| echo: false
+#| output: false
+
+coreTeam = ['jodeleeuw', 'becky-gilbert', 'bjoluc', 'cherriechang', 'jadeddelta', 'github-actions[bot]']
+
+def open_awhile(df):
+  df = df.loc[df['state'] == 'open']
+  df = df.loc[df['year'] < 2024]
+  print(f"There are {len(df)} issues which are left open since before 2024")
+  return df
+
+def from_community(df):
+    return df.drop(df[df['user'].isin(coreTeam)].index)
+
+```
 
 ```{python}
 #| echo: false
@@ -221,6 +266,18 @@ def plot_quarterly_metrics(metrics, target_metric):
   plt.grid(True)
   plt.show()
 
+def plot_history(metrics, target_metric):
+  plt.figure(figsize=(10, 6))
+  quarters = [f'{year} Q{quarter}' for year, quarter in metrics.index]
+  plt.plot(quarters, metrics[target_metric],
+    marker='o')
+
+  plt.xlabel('Quarter')
+  plt.xticks(rotation=90)
+  plt.ylabel(target_metric)
+  plt.title(f'Quarterly {target_metric} Over Time')
+  plt.grid(True)
+  plt.show()
 ```
 
 ```{python}
@@ -240,15 +297,38 @@ def generate_report():
 my_issues_analysis, my_prs_analysis, my_issues_quarterly, my_prs_quarterly = generate_report()
 ```
 
+
 # Index
-This must be inside the index page
 
 # Issues
-This must be inside the issues page
+```{python}
+#| echo: false
+open_awhile(my_issues_analysis)
+```
+```{python}
+#| echo: false
+open_awhile(from_community(my_issues_analysis))
+```
+```{python}
+#| echo: false
+plot_history(my_issues_quarterly, 'avgInteractionTime')
+```
 
 # Pull Requests
-This must be inside the pull request page
+```{python}
+#| echo: false
+open_awhile(my_prs_analysis)
+```
+```{python}
+#| echo: false
+open_awhile(from_community(my_prs_analysis))
+```
+```{python}
+#| echo: false
+plot_history(my_prs_quarterly, 'avgMergeTime')
+plot_history(my_prs_quarterly, 'avgInteractionTime')
+plot_history(my_prs_quarterly, 'closed without merging')
+```
 
 # Discussions
 This must be inside the discussion page
-
