@@ -4,7 +4,6 @@ execute:
   cache: true
 format: 
   dashboard: 
-    expandable: false
     theme:
       - simplex
       - assets/styles/quarto.scss

@@ -3,6 +3,4 @@ project:
   output-dir: docs
 execute:
   cache: true
-format:
-  html:
-    page-layout: dashboard
+format: asciidoc
