@@ -1,24 +1,11 @@
 project:
   type: website
   output-dir: docs
+  resources:
+    - assets\styles\quarto.scss
+    - assets\jspsych-favicon.png
 execute:
-  freeze: auto
-format: html
-brand: true
+  cache: true
+format: dashboard
 website:
   site-url: "https://smpdl.github.io/jsPsych-Dashboard/" 
-  navbar:
-    logo: medium
-    search: false
-    tools:
-      - icon: github
-        href: "https://github.com/jspsych/jsPsych" 
-    left:
-      - text: "Home"
-        href: index.qmd
-      - text: "Pull Requests"
-        href: pull_req.qmd
-      - text: "Issues"
-        href: issues.qmd
-      - text: "Discussions"
-        href: discussions.qmd  
