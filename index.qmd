@@ -312,6 +312,7 @@ open_awhile(from_community(my_issues_analysis))
 ```
 ```{python}
 #| echo: false
+#| lst-label: Average Interaction Time (Issues)
 plot_history(my_issues_quarterly, 'avgInteractionTime')
 ```
 
@@ -326,6 +327,7 @@ open_awhile(from_community(my_prs_analysis))
 ```
 ```{python}
 #| echo: false
+#| lst-label: Trend of Merge PRs
 plot_history(my_prs_quarterly, 'avgMergeTime')
 plot_history(my_prs_quarterly, 'avgInteractionTime')
 plot_history(my_prs_quarterly, 'closed without merging')
