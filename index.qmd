@@ -3,7 +3,9 @@ title: "jsPsych Dashboard"
 execute: 
   cache: true
 format: 
-  dashboard: 
+  dashboard:
+    expandable: false
+    scrolling: true
     theme:
       - simplex
       - assets/styles/quarto.scss
@@ -308,7 +310,7 @@ open_awhile(my_issues_analysis)
 ```
 ```{python}
 #| echo: false
-open_awhile(from_community(my_issues_analysis))
+head(open_awhile(from_community(my_issues_analysis)))
 ```
 ```{python}
 #| echo: false
@@ -319,11 +321,11 @@ plot_history(my_issues_quarterly, 'avgInteractionTime')
 # Pull Requests
 ```{python}
 #| echo: false
-open_awhile(my_prs_analysis)
+head(open_awhile(my_prs_analysis))
 ```
 ```{python}
 #| echo: false
-open_awhile(from_community(my_prs_analysis))
+head(open_awhile(from_community(my_prs_analysis)))
 ```
 ```{python}
 #| echo: false
