@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="site_libs/quarto-search/fuse.min.js"></script>
@@ -37,7 +37,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e5ba108e65e4ce57e40542064133f827.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e67e440fb53f389a48a1be55dcfd100d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="site_libs/quarto-dashboard/quarto-dashboard.js"></script>
 <script src="site_libs/quarto-dashboard/stickythead.js"></script>
 <script src="site_libs/quarto-dashboard/datatables.min.js" kdttablesentinel="true"></script>
@@ -73,6 +73,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -107,59 +110,499 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="bslib-grid-item html-fill-item tab-content bslib-grid" data-layout="flow" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
 <div id="index" class="dashboard-page tab-pane show active html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-index">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
-<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div class="card-body html-fill-item html-fill-container">
-<p>This must be inside the index page</p>
-</div>
-<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
-    <template>Expand</template>
-    <span class="bslib-full-screen-enter badge rounded-pill">
-        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
-    </span>
-</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
-</div>
+
 </div>
 <div id="issues" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-issues">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
-<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div class="card-body html-fill-item html-fill-container">
-<p>This must be inside the issues page</p>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 70fr) minmax(3em, 30fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card tabset html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header bslib-navs-card-title"><div class="card-title"><span style="display: inline">
+
+</span></div><ul class="nav nav-tabs card-header-tabs" role="tablist" data-tabsetid="card-tabset-1"><li class="nav-item" role="presentation"><a href="#card-tabset-1-1" role="tab" data-toggle="tab" data-bs-toggle="tab" data-value="Average Interaction Time (Issues)" aria-selected="true" class="nav-link active">Average Interaction Time (Issues)</a></li></ul></div>
+
+<div class="tab-content html-fill-item html-fill-container" data-tabset-id="card-tabset-1"><div class="tab-pane active show html-fill-item html-fill-container" role="tabpanel" id="card-tabset-1-1"><div class="card-body html-fill-item html-fill-container" data-title="Average Interaction Time (Issues)">
+<div class="cell-output cell-output-display html-fill-item html-fill-container">
+<img src="index_files/figure-html/cell-13-output-1.png" class="quarto-dashboard-img-contain">
 </div>
-<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
-    <template>Expand</template>
-    <span class="bslib-full-screen-enter badge rounded-pill">
-        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
-    </span>
-</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div></div></div><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Number of Open Issues From 2024" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Number of Open Issues From 2024
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output cell-output-stdout html-fill-item html-fill-container">
+<pre><code>There are 82 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="13">
+<div class="html-fill-item html-fill-container">
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">217</td>
+<td>3159</td>
+<td>Tongzhao9417</td>
+<td>2023-10-20 09:11:05+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Comprehension Items with multi-choice</td>
+<td>2023</td>
+<td>4</td>
+<td>[2023-10-20 09:14:25+00:00, 2023-10-20 09:34:2...</td>
+<td>4.0</td>
+<td>6.795888</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">218</td>
+<td>3157</td>
+<td>jodeleeuw</td>
+<td>2023-10-19 15:32:25+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Automatically handling URLs in `/docs/demos` t...</td>
+<td>2023</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">219</td>
+<td>3155</td>
+<td>Saurav-K-Aryal</td>
+<td>2023-10-18 16:19:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPsych.extensions.webgazer.showPredictions() ...</td>
+<td>2023</td>
+<td>4</td>
+<td>[2024-04-05 13:19:37+00:00]</td>
+<td>1.0</td>
+<td>169.874896</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">223</td>
+<td>3149</td>
+<td>becky-gilbert</td>
+<td>2023-10-06 17:34:10+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add optional callback params to `record-video`...</td>
+<td>2023</td>
+<td>4</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">231</td>
+<td>3121</td>
+<td>bjoluc</td>
+<td>2023-09-06 15:13:29+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Remove the `canvas` dependency from `@jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card cell html-fill-item html-fill-container bslib-card" data-title="Number of Open Issues From 2024 (From Community)" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Number of Open Issues From 2024 (From Community)
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output cell-output-stdout html-fill-item html-fill-container">
+<pre><code>There are 35 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="14">
+<div class="html-fill-item html-fill-container">
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">217</td>
+<td>3159</td>
+<td>Tongzhao9417</td>
+<td>2023-10-20 09:11:05+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Comprehension Items with multi-choice</td>
+<td>2023</td>
+<td>4</td>
+<td>[2023-10-20 09:14:25+00:00, 2023-10-20 09:34:2...</td>
+<td>4.0</td>
+<td>6.795888</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">219</td>
+<td>3155</td>
+<td>Saurav-K-Aryal</td>
+<td>2023-10-18 16:19:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>jsPsych.extensions.webgazer.showPredictions() ...</td>
+<td>2023</td>
+<td>4</td>
+<td>[2024-04-05 13:19:37+00:00]</td>
+<td>1.0</td>
+<td>169.874896</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">235</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">247</td>
+<td>3072</td>
+<td>nikbpetrov</td>
+<td>2023-06-20 12:28:02+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Simulation mode: survey-multi-select does not ...</td>
+<td>2023</td>
+<td>2</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">282</td>
+<td>2910</td>
+<td>nikbpetrov</td>
+<td>2022-12-20 12:22:55+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Allow editing trials' parameters during simula...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2023-05-04 02:05:59+00:00, 2023-05-04 05:37:4...</td>
+<td>3.0</td>
+<td>45.009174</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
 </div>
 </div>
 <div id="pull-requests" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-pull-requests">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
-<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div class="card-body html-fill-item html-fill-container">
-<p>This must be inside the pull request page</p>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 70fr) minmax(3em, 30fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card tabset html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header bslib-navs-card-title"><div class="card-title"><span style="display: inline">
+
+</span></div><ul class="nav nav-tabs card-header-tabs" role="tablist" data-tabsetid="card-tabset-4"><li class="nav-item" role="presentation"><a href="#card-tabset-4-1" role="tab" data-toggle="tab" data-bs-toggle="tab" data-value="Average Merge Time" aria-selected="true" class="nav-link active">Average Merge Time</a></li><li class="nav-item" role="presentation"><a href="#card-tabset-4-2" role="tab" data-toggle="tab" data-bs-toggle="tab" data-value="Average Interaction Time (Pull Request)" aria-selected="false" class="nav-link">Average Interaction Time (Pull Request)</a></li><li class="nav-item" role="presentation"><a href="#card-tabset-4-3" role="tab" data-toggle="tab" data-bs-toggle="tab" data-value="Closed W/O Merging" aria-selected="false" class="nav-link">Closed W/O Merging</a></li></ul></div>
+
+
+
+<div class="tab-content html-fill-item html-fill-container" data-tabset-id="card-tabset-4"><div class="tab-pane active show html-fill-item html-fill-container" role="tabpanel" id="card-tabset-4-1"><div class="card-body html-fill-item html-fill-container" data-title="Average Merge Time">
+<div class="cell-output cell-output-display html-fill-item html-fill-container">
+<img src="index_files/figure-html/cell-16-output-1.png" class="quarto-dashboard-img-contain">
 </div>
-<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
-    <template>Expand</template>
-    <span class="bslib-full-screen-enter badge rounded-pill">
-        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
-    </span>
-</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div></div><div class="tab-pane html-fill-item html-fill-container" role="tabpanel" id="card-tabset-4-2"><div class="card-body html-fill-item html-fill-container" data-title="Average Interaction Time (Pull Request)">
+<div class="cell-output cell-output-display html-fill-item html-fill-container">
+<img src="index_files/figure-html/cell-17-output-1.png" class="quarto-dashboard-img-contain">
+</div>
+</div></div><div class="tab-pane html-fill-item html-fill-container" role="tabpanel" id="card-tabset-4-3"><div class="card-body html-fill-item html-fill-container" data-title="Closed W/O Merging">
+<div class="cell-output cell-output-display html-fill-item html-fill-container">
+<img src="index_files/figure-html/cell-18-output-1.png" class="quarto-dashboard-img-contain">
+</div>
+</div></div></div><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Number of Open PRs From 2024" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Number of Open PRs From 2024
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output cell-output-stdout html-fill-item html-fill-container">
+<pre><code>There are 6 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="18">
+<div class="html-fill-item html-fill-container">
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">pull_request</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th data-quarto-table-cell-role="th">merge_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">109</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">134</td>
+<td>2877</td>
+<td>bjoluc</td>
+<td>2022-11-21 17:44:54+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Code-based plugin parameter docs</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-21 17:44:58+00:00, 2022-11-21 19:12:3...</td>
+<td>3.0</td>
+<td>201.765320</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">139</td>
+<td>2847</td>
+<td>jadeddelta</td>
+<td>2022-11-01 23:31:50+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Handle permission rejection from camera/microp...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-11-01 23:31:53+00:00]</td>
+<td>1.0</td>
+<td>0.000035</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">143</td>
+<td>2822</td>
+<td>mgrewe</td>
+<td>2022-10-17 13:59:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>feat: add callbacks on experiment finish</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-10-17 13:59:33+00:00, 2022-10-19 14:17:3...</td>
+<td>4.0</td>
+<td>0.909893</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">208</td>
+<td>2360</td>
+<td>gali1998</td>
+<td>2021-11-27 18:40:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add `hide_slider_while_playing` parameter</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-11-27 18:40:51+00:00, 2021-11-27 19:52:4...</td>
+<td>6.0</td>
+<td>1.498997</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card cell html-fill-item html-fill-container bslib-card" data-title="Number of Open PRs From 2024 (From Community)" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Number of Open PRs From 2024 (From Community)
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output cell-output-stdout html-fill-item html-fill-container">
+<pre><code>There are 4 issues which are left open since before 2024</code></pre>
+</div>
+<div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="19">
+<div class="html-fill-item html-fill-container">
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">number</th>
+<th data-quarto-table-cell-role="th">user</th>
+<th data-quarto-table-cell-role="th">created_at_x</th>
+<th data-quarto-table-cell-role="th">closed_at</th>
+<th data-quarto-table-cell-role="th">state</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">pull_request</th>
+<th data-quarto-table-cell-role="th">year</th>
+<th data-quarto-table-cell-role="th">quarter</th>
+<th data-quarto-table-cell-role="th">created_at_y</th>
+<th data-quarto-table-cell-role="th">comment_count</th>
+<th data-quarto-table-cell-role="th">avg_interaction_time</th>
+<th data-quarto-table-cell-role="th">merge_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">109</td>
+<td>3107</td>
+<td>jansim</td>
+<td>2023-07-31 14:31:04+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>WIP: Add internationalization (i.e. translatio...</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2023</td>
+<td>3</td>
+<td>[2023-07-31 14:31:08+00:00, 2023-09-01 14:05:3...</td>
+<td>11.0</td>
+<td>3.994703</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">143</td>
+<td>2822</td>
+<td>mgrewe</td>
+<td>2022-10-17 13:59:28+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>feat: add callbacks on experiment finish</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2022</td>
+<td>4</td>
+<td>[2022-10-17 13:59:33+00:00, 2022-10-19 14:17:3...</td>
+<td>4.0</td>
+<td>0.909893</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">208</td>
+<td>2360</td>
+<td>gali1998</td>
+<td>2021-11-27 18:40:46+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Add `hide_slider_while_playing` parameter</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>4</td>
+<td>[2021-11-27 18:40:51+00:00, 2021-11-27 19:52:4...</td>
+<td>6.0</td>
+<td>1.498997</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">268</td>
+<td>1954</td>
+<td>keshavpabbi</td>
+<td>2021-06-30 16:56:59+00:00</td>
+<td>NaT</td>
+<td>open</td>
+<td>Modified Visual Search Circle Plugin</td>
+<td>{'url': 'https://api.github.com/repos/jspsych/...</td>
+<td>2021</td>
+<td>2</td>
+<td>[2021-06-30 17:05:58+00:00, 2021-07-02 17:14:3...</td>
+<td>13.0</td>
+<td>7.456574</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
 </div>
 </div>
 <div id="discussions" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-discussions">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, max-content); grid-auto-columns: minmax(0, 1fr);">
-<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()">
 <div class="card-body html-fill-item html-fill-container">
 <p>This must be inside the discussion page</p>
 </div>
-<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
-    <template>Expand</template>
-    <span class="bslib-full-screen-enter badge rounded-pill">
-        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
-    </span>
-</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
 
 
 <div id="3ade8a4a-fb1d-4a6c-8409-ac45482d5fc9" class="hidden html-fill-item html-fill-container">

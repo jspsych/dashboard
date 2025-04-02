@@ -5,10 +5,10 @@ execute:
 format: 
   dashboard:
     expandable: false
-    scrolling: true
     theme:
-      - simplex
+      - cosmo
       - assets/styles/quarto.scss
+      - assets/styles/brand.scss
     scrolling: true
     logo: assets/jspsych-favicon.png
     nav-buttons:
@@ -304,35 +304,62 @@ my_issues_analysis, my_prs_analysis, my_issues_quarterly, my_prs_quarterly = gen
 # Index
 
 # Issues
+
+## Row {height=70%}
+
+### Column {.tabset}
 ```{python}
 #| echo: false
-open_awhile(my_issues_analysis)
-```
-```{python}
-#| echo: false
-head(open_awhile(from_community(my_issues_analysis)))
-```
-```{python}
-#| echo: false
-#| lst-label: Average Interaction Time (Issues)
+#| title: Average Interaction Time (Issues)
+#| id: avg-interaction-time
 plot_history(my_issues_quarterly, 'avgInteractionTime')
 ```
 
+## Row {height=30%}
+```{python}
+#| echo: false
+#| title: Number of Open Issues From 2024
+open_awhile(my_issues_analysis).head()
+```
+
+```{python}
+#| echo: false
+#| title: Number of Open Issues From 2024 (From Community)
+open_awhile(from_community(my_issues_analysis)).head()
+```
+
+
 # Pull Requests
+
+## Row {height=70%}
+
+### Column {.tabset}
 ```{python}
 #| echo: false
-head(open_awhile(my_prs_analysis))
-```
-```{python}
-#| echo: false
-head(open_awhile(from_community(my_prs_analysis)))
-```
-```{python}
-#| echo: false
-#| lst-label: Trend of Merge PRs
+#| title: Average Merge Time 
 plot_history(my_prs_quarterly, 'avgMergeTime')
+```
+```{python}
+#| echo: false
+#| title: Average Interaction Time (Pull Request)
 plot_history(my_prs_quarterly, 'avgInteractionTime')
+```
+```{python}
+#| echo: false
+#| title: Closed W/O Merging
 plot_history(my_prs_quarterly, 'closed without merging')
+```
+
+## Row {height=30%}
+```{python}
+#| echo: false
+#| title: Number of Open PRs From 2024 
+open_awhile(my_prs_analysis).head()
+```
+```{python}
+#| echo: false
+#| title: Number of Open PRs From 2024 (From Community)
+open_awhile(from_community(my_prs_analysis)).head()
 ```
 
 # Discussions
