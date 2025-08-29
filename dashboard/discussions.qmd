@@ -1,0 +1,6 @@
+---
+title: "Discussions"
+
+---
+
+This is the discussions page.

@@ -1,7 +1,11 @@
 requests
+quarto
 datetime
 pandas 
 numpy 
 matplotlib
 jupyter-cache
 python-dotenv
+jupyterlab
+shinylive
+htmltools

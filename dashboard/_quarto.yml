@@ -1,0 +1,33 @@
+project:
+  type: website
+  output-dir: docs
+  resources:
+    - assets\styles\quarto.scss
+    - assets\jspsych-favicon.png
+
+website:
+  navbar: 
+    title: "JsPsych Dashboard"
+    logo: assets/jspsych-favicon.png
+    left: 
+      - text: "Overview"
+        href: overview.qmd
+      - text: "Pull Requests"
+        href: pullrequests.qmd
+      - text: "Issues"
+        href: issues.qmd
+      - text: "Discussions"
+        href: discussions.qmd
+    right:
+      - icon: github
+        href: "https://github.com/jspsych/jsPsych"
+    
+format:
+  dashboard: 
+    theme: 
+      - cosmo
+      - assets/styles/quarto.scss
+
+
+
+
