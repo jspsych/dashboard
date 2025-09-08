@@ -1,0 +1,91 @@
+---
+format: 
+    dashboard:
+        scrolling: true
+    
+---
+
+# 30d
+
+## Row 
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Total Issues"}
+`{python} 113`
+:::
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Average Resolution"}
+
+`{python} 11`
+:::
+
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} 50`
+:::
+
+::: {.valuebox icon="file-diff" color="vb-primary" title="Resolution Rate"}
+
+`{python} 50`
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
+```
+```{python}
+
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
+```
+
+Lines added/deleted over time
+
+```{python}
+
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">Backlog Helath Over Time</span> </span>")
+```
+
+Features vs maintenance vs bugs
+
+```{python}
+
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\">Resolution Time Trend</span> </span>")
+```
+
+Lines added/deleted over time
+
+```{python}
+
+```
+
+:::
+
+# 60d
+
+# 90d
+
+# All

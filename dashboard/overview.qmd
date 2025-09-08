@@ -4,15 +4,39 @@ format:
         scrolling: true
 ---
 
+# 30d
+
 ## Row 
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import os
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Now you can import your modules
+from src.metrics_calculator import MetricsCalculator
+
+
+calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
+calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
+calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
+
+```
+
 
 ::: {.valuebox icon="sign-merge-right-fill" color="vb-primary" title="Merge Rate"}
 
-`{python} 10`
+`{python} float("{:.2f}".format(calculator_all.get_merge_rate()))`
 
 ```{python} 
-import htmltools
-htmltools.HTML("<span>10 of 10 PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_merged_count()} of {calculator_all.get_total_pull_requests()} PRs merged</span>") 
 ```
 
 :::
@@ -22,7 +46,6 @@ htmltools.HTML("<span>10 of 10 PRs merged</span>")
 `{python} 11`
 
 ```{python} 
-import htmltools
 htmltools.HTML("<span>43 issues resolved</span>") 
 ```
 
@@ -33,7 +56,6 @@ htmltools.HTML("<span>43 issues resolved</span>")
 `{python} 50`
 
 ```{python} 
-import htmltools
 htmltools.HTML("<span>25 issues, 25 PRs</span>") 
 ```
 
@@ -44,7 +66,6 @@ htmltools.HTML("<span>25 issues, 25 PRs</span>")
 `{python} 50`
 
 ```{python} 
-import htmltools
 htmltools.HTML("<span>Unique Contributors</span>") 
 ```
 
@@ -56,21 +77,9 @@ htmltools.HTML("<span>Unique Contributors</span>")
 ::: {.card}
 
 ```{python} 
-import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
 ```
-
-Releases with PR counts between versions
-
 ```{python} 
-
-# This is a sample plot
-
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-
-
 dates = pd.to_datetime([
     '2024-07-25', '2024-06-25', '2024-05-25', '2024-04-25',
     '2024-03-25', '2024-02-25', '2024-01-25', '2023-12-24',
@@ -127,13 +136,36 @@ plt.show()
 ## Row
 
 ::: {.card}
-B1 Description
+```{python} 
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Work Type Distribution</span> </span>")
+```
+
+Features vs maintenance vs bugs
+
+```{python}
+
+```
 
 :::
 
 ::: {.card}
-B2 Description
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
+```
+
+Lines added/deleted over time
+
+```{python}
+
+```
 
 :::
 
 ## Row
+
+# 60d
+
+# 90d
+
+# All

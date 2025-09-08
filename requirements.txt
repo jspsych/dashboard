@@ -9,3 +9,5 @@ python-dotenv
 jupyterlab
 shinylive
 htmltools
+typing
+httpx

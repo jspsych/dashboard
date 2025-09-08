@@ -1,6 +1,92 @@
 ---
-title: "PR"
-
+format: 
+    dashboard:
+        scrolling: true
 ---
 
-This is the PR file
+# 30d
+
+## Row 
+
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Total Pull Requests"}
+
+`{python} 113`
+:::
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Average Review/PRs"}
+
+`{python} 11`
+:::
+
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Time to First Review"}
+
+`{python} 50`
+:::
+
+::: {.valuebox icon="file-diff" color="vb-primary" title="Avg. Lines Changed"}
+
+`{python} 50`
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
+```
+```{python}
+
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> PR Size Distribution</span> </span>")
+```
+
+Lines added/deleted over time
+
+```{python}
+
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">PR Volume Trend</span> </span>")
+```
+
+Features vs maintenance vs bugs
+
+```{python}
+
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\">PR Lifecycle Funnel</span> </span>")
+```
+
+Lines added/deleted over time
+
+```{python}
+
+```
+
+:::
+
+# 60d
+
+# 90d
+
+# All
