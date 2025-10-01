@@ -30,10 +30,10 @@ class DatabaseSchema:
                     user_type TEXT, -- 'User', 'Organization', etc. 
                     base_branch TEXT NOT NULL,
                     head_branch TEXT NOT NULL,
-                    additions INTEGER DEFAULT 0,
-                    deletions INTEGER DEFAULT 0,
-                    changed_files INTEGER DEFAULT 0,
-                    commits_count INTEGER DEFAULT 0,
+                    additions INTEGER,
+                    deletions INTEGER,
+                    changed_files INTEGER,
+                    commits_count INTEGER,
                     labels TEXT, -- JSON array of label names
                     assignees TEXT, -- JSON array of assignee logins
                     draft BOOLEAN DEFAULT FALSE,
@@ -60,7 +60,7 @@ class DatabaseSchema:
                     user_type TEXT,
                     assignee_login TEXT,
                     labels TEXT, -- JSON array of label names
-                    comments_count INTEGER DEFAULT 0,
+                    comments_count INTEGER,
                     issue_type TEXT, -- 'bug', 'feature', 'question', 'documentation'
                     priority TEXT, -- 'low', 'medium', 'high', 'critical'
                     first_response_at TEXT, -- when first comment/assignment was made

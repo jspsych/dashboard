@@ -11,3 +11,5 @@ shinylive
 htmltools
 typing
 httpx
+seaborn
+statsmodels

@@ -2,11 +2,10 @@ import os
 import logging
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-from github_client import fetch_api
-from database import DatabaseManager
-from models import DatabaseHelper
-from config import Config
-
+from .github_client import fetch_api
+from .database import DatabaseManager
+from .models import DatabaseHelper
+from .config import Config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,7 +23,6 @@ class GitHubDataPipeline:
     def fetch_and_store_pull_requests(self, state: str = "all") -> int:
         """Fetch pull requests from GitHub and store in database"""
         logger.info(f"Fetching pull requests with state: {state}")
-        
         endpoint = f"pulls?state={state}&per_page=100&sort=updated&direction=desc"
         pr_data = fetch_api(endpoint, self.github_token)
         
@@ -41,6 +39,34 @@ class GitHubDataPipeline:
         self.db.set_metadata('total_prs_tracked', str(stored_count))
         logger.info(f"Stored {stored_count} pull requests")
         return stored_count
+    
+    def fetch_add_del_data(self) -> int:
+        """Fetch additions and deletions for all PRs"""
+        logger.info("Fetching additions and deletions for all PRs...")
+        pull_requests = self.db.get_pull_requests()
+        count = 0
+        for pr in pull_requests:
+            pr_number = pr['number']
+            logger.info(f"Fetching stats for PR #{pr_number}")
+            endpoint = f"pulls/{pr_number}"
+            pr_data = fetch_api(endpoint, self.github_token)
+            if pr_data and isinstance(pr_data, dict):
+                additions = pr_data.get('additions', 0)
+                deletions = pr_data.get('deletions', 0)
+                changed_files = pr_data.get('changed_files', 0)
+                commits_count = pr_data.get('commits', 0)
+                updated_pr = dict(pr)
+                updated_pr['additions'] = additions
+                updated_pr['deletions'] = deletions
+                updated_pr['changed_files'] = changed_files
+                updated_pr['commits_count'] = commits_count
+                self.db.upsert_pull_request(updated_pr)
+                print(f"PR #{pr_number}: +{additions} -{deletions} ({changed_files} files changed, {commits_count} commits)")
+                count += 1
+            else:
+                print(f"Failed to fetch data for PR #{pr_number}")
+        logger.info("Completed fetching additions and deletions.")
+        return count
     
     def fetch_and_store_issues(self, state: str = "all") -> int:
         """Fetch issues from GitHub and store in database"""
@@ -132,10 +158,10 @@ class GitHubDataPipeline:
             'user_type': pr['user'].get('type'),
             'base_branch': pr['base']['ref'],
             'head_branch': pr['head']['ref'],
-            'additions': pr.get('additions', 0),
-            'deletions': pr.get('deletions', 0),
-            'changed_files': pr.get('changed_files', 0),
-            'commits_count': pr.get('commits', 0),
+            'additions': pr.get('additions'),
+            'deletions': pr.get('deletions'),
+            'changed_files': pr.get('changed_files'),
+            'commits_count': pr.get('commits'),
             'labels': labels,
             'assignees': assignees,
             'draft': pr.get('draft', False),
@@ -159,7 +185,7 @@ class GitHubDataPipeline:
             'user_type': issue['user'].get('type'),
             'assignee_login': assignee['login'] if assignee else None,
             'labels': labels,
-            'comments_count': issue.get('comments', 0),
+            'comments_count': issue.get('comments'),
             'is_external_user': issue['user'].get('type') == 'User'
         }
     
@@ -213,13 +239,14 @@ class GitHubDataPipeline:
     def sync_all_data(self):
         """Comprehensive sync of all GitHub data"""
         logger.info("Starting full data sync...")
-        
+
         pr_count = self.fetch_and_store_pull_requests()
         issue_count = self.fetch_and_store_issues()
         review_count = self.fetch_and_store_reviews_for_all_prs()
         comment_count = self.fetch_and_store_comments()
         release_count = self.fetch_and_store_releases()
-        
+        add_count = self.fetch_add_del_data()
+
         self.db.update_last_sync_time('full')
         logger.info(f"Full sync completed: {pr_count} PRs, {issue_count} issues, {review_count} reviews, {release_count} releases, and {comment_count} comments stored.")
         return {
@@ -228,5 +255,6 @@ class GitHubDataPipeline:
             'reviews': review_count,
             'comments': comment_count,
             'releases': release_count,
+            'additions_deletions_fetched': add_count,
             'timestamp': datetime.utcnow().isoformat()
         }

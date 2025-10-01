@@ -1,0 +1,33 @@
+/*-- scss:rules --*/
+
+.bg-vb-primary {
+  background-color: var(--bs-primary-rgb);
+  border-color: #a1a1a1;
+  border-width: 1px;
+  border-radius: calc(0.625rem + 4px);
+}
+
+.value-box-title {
+  font-size: 1.1rem;
+  font-weight: bold;}
+
+.card {
+  border-radius: calc(0.625rem + 4px);
+}
+
+.card-header {
+  background-color: var(--background-color);
+}
+
+.card-title {
+  font-size: 1.1rem;
+}
+
+p{
+  font-size: 0.8rem;
+}
+
+.cell .card-body .html-fill-item .html-fill-container{
+  padding-bottom: 0px;
+}
+

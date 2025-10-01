@@ -5,26 +5,117 @@ format:
     
 ---
 
-# 30d
+# All
 
 ## Row 
-::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Total Issues"}
-`{python} 113`
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import sys
+import os
+
+
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from src.metrics_calculator import MetricsCalculator
+
+calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
+calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
+calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
+
+```
+
+```{python}
+def visualise_open_issues_aging(calculator: MetricsCalculator) -> None:
+    aging_df = calculator.open_issues_aging()
+    aging = aging_df['age_days'] if not aging_df.empty else pd.Series(dtype=float)
+    bins = [0, 30, 90, 180, 365, 730, 1825, np.inf]  # <1m, 1-3m, 3-6m, 6-12m, 1-2y, 2-5y, >5y
+    labels = ['<1m', '1-3m', '3-6m', '6-12m', '1-2y', '2-5y', '>5y']
+    aging_binned = pd.cut(aging, bins=bins, labels=labels, right=False)
+    counts = aging_binned.value_counts().sort_index()
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(14, 10))
+    bars = sns.barplot(x=counts.index, y=counts.values, ax=ax, palette=[sns.color_palette('Set2')[2]])
+    ax.set_xlabel('Open Issue Age')
+    ax.set_ylabel('Number of Open Issues')
+    ax.set_title('Open Issues Aging Distribution')
+    for i, v in enumerate(counts.values):
+        ax.text(i, v + max(counts.values)*0.01, str(int(v)), ha='center', va='bottom', fontsize=12)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_open_issues_types(calculator: MetricsCalculator) -> None:
+    issues_df = calculator.open_issues_type()
+    if issues_df.empty or not {'issue_type', 'count'}.issubset(issues_df.columns):
+        sns.set_theme(style="whitegrid", palette="Set2")
+        fig, ax = plt.subplots(figsize=(12, 12))
+        ax.text(0.5, 0.5, 'No data available', ha='center', va='center', fontsize=14)
+        ax.set_axis_off()
+        plt.tight_layout()
+        plt.show()
+        return
+    plot_df = issues_df.sort_values('count', ascending=False)
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(14, 10))
+    bars = sns.barplot(x=plot_df['issue_type'], y=plot_df['count'], ax=ax, palette=[sns.color_palette('Set2')[2]])
+    ax.set_xlabel('Issue Type')
+    ax.set_ylabel('Number of Open Issues')
+    ax.set_title('Open Issues by Type')
+    for i, v in enumerate(plot_df['count']):
+        ax.text(i, v + max(plot_df['count'])*0.01, str(int(v)), ha='center', va='bottom', fontsize=12)
+    plt.tight_layout()
+    plt.show()
+```
+
+::: {.valuebox icon="file-earmark-lock2-fill" color="vb-primary" title="Median Issue Close Time"}
+`{python} float("{:.2f}".format(calculator_all.get_median_issue_close_time()))`
+
+```{python}
+htmltools.HTML(f"<span>days to close an issue that was openedduring this time window</span>") 
+```
+
 :::
 
-::: {.valuebox icon="person-check-fill" color="vb-primary" title="Average Resolution"}
 
-`{python} 11`
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_all.get_time_to_first_response_issue()))`
+
+```{python}
+htmltools.HTML(f"<span>days to respond to an issue that was opened during this time window</span>") 
+```
+
 :::
 
-::: {.valuebox icon="clock-fill" color="vb-primary" title="Time to First Response"}
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Issue Close Rate"}
 
-`{python} 50`
+`{python} float("{:.2f}".format(calculator_all.get_issue_close_rate()["close_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_all.get_issue_close_rate()['total_closed']} issues closed out of {calculator_all.get_issue_close_rate()['total_issues']} total issues</span>")
+```
+
+
 :::
 
-::: {.valuebox icon="file-diff" color="vb-primary" title="Resolution Rate"}
+::: {.valuebox icon="file-diff" color="vb-primary" title="Issue Backlog"}
 
-`{python} 50`
+`{python} calculator_all.backlog_trend_issues()`
+
+```{python}
+htmltools.HTML(f"<span>issues open</span>")
+```
+
 :::
 
 ## Row
@@ -32,10 +123,10 @@ format:
 ::: {.card}
 ```{python} 
 import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-clock-history\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
 ```
 ```{python}
-
+visualise_open_issues_aging(calculator=calculator_all)
 ```
 
 :::
@@ -43,13 +134,58 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ::: {.card}
 ```{python} 
 import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-list-task\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
 ```
 
-Lines added/deleted over time
 
 ```{python}
+visualise_open_issues_types(calculator=calculator_all)
+```
 
+:::
+
+# 90d
+
+## Row 
+
+::: {.valuebox icon="file-earmark-lock2-fill" color="vb-primary" title="Median Issue Close Time"}
+`{python} float("{:.2f}".format(calculator_90d.get_median_issue_close_time()))`
+
+```{python}
+htmltools.HTML(f"<span>days to close an issue that was opened during this time window</span>") 
+```
+
+:::
+
+
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_time_to_first_response_issue()))`
+
+```{python}
+htmltools.HTML(f"<span>days to respond to an issue that was opened during this time window</span>") 
+```
+
+:::
+
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Issue Close Rate"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_issue_close_rate()["close_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_90d.get_issue_close_rate()['total_closed']} issues closed out of {calculator_90d.get_issue_close_rate()['total_issues']} total issues</span>")
+```
+
+
+:::
+
+::: {.valuebox icon="file-diff" color="vb-primary" title="Issue Backlog"}
+
+`{python} calculator_90d.backlog_trend_issues()`
+
+```{python}
+htmltools.HTML(f"<span>issues open</span>")
 ```
 
 :::
@@ -59,13 +195,10 @@ Lines added/deleted over time
 ::: {.card}
 ```{python} 
 import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\">Backlog Helath Over Time</span> </span>")
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-clock-history\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
 ```
-
-Features vs maintenance vs bugs
-
 ```{python}
-
+visualise_open_issues_aging(calculator=calculator_90d)
 ```
 
 :::
@@ -73,19 +206,154 @@ Features vs maintenance vs bugs
 ::: {.card}
 ```{python} 
 import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\">Resolution Time Trend</span> </span>")
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-list-task\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
 ```
 
-Lines added/deleted over time
 
 ```{python}
-
+visualise_open_issues_types(calculator=calculator_90d)
 ```
 
 :::
 
 # 60d
 
-# 90d
+## Row 
 
-# All
+::: {.valuebox icon="file-earmark-lock2-fill" color="vb-primary" title="Median Issue Close Time"}
+`{python} float("{:.2f}".format(calculator_60d.get_median_issue_close_time()))`
+
+```{python}
+htmltools.HTML(f"<span>days to close an issue that was opened during this time window</span>") 
+```
+
+:::
+
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_time_to_first_response_issue()))`
+
+```{python}
+htmltools.HTML(f"<span>days to respond to an issue that was opened during this time window</span>") 
+```
+
+:::
+
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Issue Close Rate"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_issue_close_rate()["close_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_60d.get_issue_close_rate()['total_closed']} issues closed out of {calculator_60d.get_issue_close_rate()['total_issues']} total issues</span>")
+```
+
+
+:::
+
+::: {.valuebox icon="file-diff" color="vb-primary" title="Issue Backlog"}
+
+`{python} calculator_60d.backlog_trend_issues()`
+
+```{python}
+htmltools.HTML(f"<span>issues open</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-clock-history\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
+```
+```{python}
+visualise_open_issues_aging(calculator=calculator_60d)
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-list-task\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
+```
+
+
+```{python}
+visualise_open_issues_types(calculator=calculator_60d)
+```
+
+:::
+
+# 30d
+
+## Row 
+
+::: {.valuebox icon="file-earmark-lock2-fill" color="vb-primary" title="Median Issue Close Time"}
+`{python} float("{:.2f}".format(calculator_30d.get_median_issue_close_time()))`
+
+```{python}
+htmltools.HTML(f"<span>days to close an issue that was opened during this time window</span>") 
+```
+
+:::
+
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_time_to_first_response_issue()))`
+
+```{python}
+htmltools.HTML(f"<span>days to respond to an issue that was opened during this time window</span>") 
+```
+
+:::
+
+::: {.valuebox icon="clock-fill" color="vb-primary" title="Issue Close Rate"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_issue_close_rate()["close_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_30d.get_issue_close_rate()['total_closed']} issues closed out of {calculator_30d.get_issue_close_rate()['total_issues']} total issues</span>")
+```
+
+
+:::
+
+::: {.valuebox icon="file-diff" color="vb-primary" title="Issue Backlog"}
+
+`{python} calculator_30d.backlog_trend_issues()`
+
+```{python}
+htmltools.HTML(f"<span>issues open</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-clock-history\"> </i> <span class=\"ms-2\">Open Issues Aging</span> </span>")
+```
+```{python}
+visualise_open_issues_aging(calculator=calculator_30d)
+```
+
+:::
+
+::: {.card}
+```{python} 
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-list-task\"> </i> <span class=\"ms-2\">Open Issues Type</span> </span>")
+```
+
+
+```{python}
+visualise_open_issues_types(calculator=calculator_30d)
+```
+
+:::

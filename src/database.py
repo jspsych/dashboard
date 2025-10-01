@@ -94,8 +94,8 @@ class DatabaseManager:
                     pr_data.get('closed_at'), pr_data.get('merged_at'),
                     pr_data['user_login'], pr_data.get('user_type'),
                     pr_data['base_branch'], pr_data['head_branch'],
-                    pr_data.get('additions', 0), pr_data.get('deletions', 0),
-                    pr_data.get('changed_files', 0), pr_data.get('commits_count', 0),
+                    pr_data.get('additions'), pr_data.get('deletions'),
+                    pr_data.get('changed_files'), pr_data.get('commits_count'),
                     labels, assignees, pr_data.get('draft', False),
                     pr_data.get('mergeable'), is_breaking, pr_type,
                     pr_data.get('first_response_at'), now

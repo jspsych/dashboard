@@ -2,11 +2,11 @@ project:
   type: website
   output-dir: docs
   resources:
-    - assets\styles\quarto.scss
-    - assets\jspsych-favicon.png
-
+    - assets/styles/quarto.scss
+    - assets/jspsych-favicon.png
 website:
   navbar: 
+    search: false
     title: "JsPsych Dashboard"
     logo: assets/jspsych-favicon.png
     left: 
