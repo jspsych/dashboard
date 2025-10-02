@@ -1,0 +1,38 @@
+# Quarto Project Configuration
+# This file configures the Quarto project settings, including website structure,
+# navigation bar, and formatting options.
+
+project:
+  type: website
+  output-dir: docs
+  resources:
+    - assets/styles/quarto.scss
+    - assets/jspsych-favicon.png
+website:
+  navbar: 
+    search: false
+    title: "JsPsych Dashboard"
+    favicon: assets/jspsych-favicon.png
+    logo: assets/jspsych-favicon.png
+    left: 
+      - text: "Overview"
+        href: overview.qmd
+      - text: "Pull Requests"
+        href: pullrequests.qmd
+      - text: "Issues"
+        href: issues.qmd
+      - text: "Discussions"
+        href: discussions.qmd
+    right:
+      - icon: github
+        href: "https://github.com/jspsych/jsPsych"
+    
+format:
+  dashboard: 
+    theme: 
+      - cosmo
+      - assets/styles/quarto.scss
+
+
+
+

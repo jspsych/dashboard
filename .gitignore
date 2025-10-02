@@ -1,3 +1,9 @@
 /.quarto/
 .env
 .jupyter_cache/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+*.pyo
+*.pyd
+dashboard/docs/

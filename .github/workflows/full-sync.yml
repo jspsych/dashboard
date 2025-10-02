@@ -1,0 +1,47 @@
+# This workflow performs a full synchronization and deployment.
+# It is scheduled to run daily and can also be triggered manually.
+# The workflow checks out the repository, sets up Python and Quarto,
+# installs dependencies, performs a full sync, and publishes the site to GitHub Pages.
+
+name: Daily Full Sync and Deploy
+on:
+  schedule:
+    - cron: '0 5 * * *' 
+  workflow_dispatch: {} 
+permissions:
+  contents: write
+concurrency:
+  group: "pages" 
+  cancel-in-progress: true 
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+      - name: Full sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -m src.cli full
+      - name: Render and Publish (gh-pages)
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          path: dashboard
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+

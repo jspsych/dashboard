@@ -1,7 +1,13 @@
 requests
+quarto
 datetime
 pandas 
 numpy 
 matplotlib
 jupyter-cache
 python-dotenv
+jupyterlab
+htmltools
+typing
+httpx
+seaborn

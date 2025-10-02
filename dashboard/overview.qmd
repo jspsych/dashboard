@@ -1,0 +1,537 @@
+---
+format: 
+    dashboard:
+        scrolling: true
+        title: Overview
+---
+
+# All
+
+## Row 
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import sys
+import os
+import matplotlib.dates as mdates
+import datetime
+
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from src.metrics_calculator import MetricsCalculator
+from src.database import DatabaseManager
+
+calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
+calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
+calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
+
+db = DatabaseManager()
+```
+
+```{python}
+def viusalise_backlog_trend(calculator:MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="viridis")
+    fig, ax = plt.subplots(figsize=(12,11))
+    df = calculator.get_backlog_trend()
+    days = calculator.days 
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period', 
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        plt.tight_layout()
+        plt.show()
+        return
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.set_index('date')
+    bucket_label = "Backlog"
+    if days is not None and days <= 60:
+        resampled_df = df
+        bucket_label = "Daily Backlog"
+    elif days == 90:
+        resampled_df = df.resample('W-MON').agg({
+            'opened': 'sum',
+            'closed': 'sum',
+            'backlog': 'last' 
+        }).dropna()
+        bucket_label = "Weekly Backlog"
+    else: 
+        rule, bucket_label = 'W-MON', "Weekly Backlog"
+        resampled_df = df.resample(rule).agg({
+            'opened': 'sum',
+            'closed': 'sum',
+            'backlog': 'last'
+        }).dropna()
+    sns.lineplot(data=resampled_df, x=resampled_df.index, y='backlog', ax=ax, 
+                 marker='o', markersize=5, label=bucket_label)
+    
+    ax.set_xlabel("Date", fontsize=12)
+    ax.set_ylabel("Total Backlog Count", fontsize=12)
+    ax.tick_params(axis='x', rotation=30)
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+    plt.show()
+```
+
+```{python}
+def visualise_code_churn(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid")
+    fig, ax = plt.subplots(figsize=(12, 11))
+    
+    df = calculator.get_code_churn()
+    days = calculator.days
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period', 
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        # title_period variable was undefined, setting a default/placeholder
+        title_period = f"Data for {'All Time' if days is None else f'{days} Days'}" 
+        ax.set_title(f"Code Churn: {title_period}")
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.set_index('date')
+    if days is not None and days <= 60:
+        resampled_df = df
+        time_label = "Daily"
+    else:
+        resampled_df = df.resample('W-MON').agg({
+            'additions': 'sum',
+            'deletions': 'sum',
+        }).dropna()
+        time_label = "Weekly"
+
+    # Additions (curve + filled area above 0)
+    ax.plot(resampled_df.index, resampled_df['additions'],
+            color='green', linewidth=1.5, label=f'{time_label} Additions')
+    ax.fill_between(resampled_df.index, resampled_df['additions'], 0,
+                    color='green', alpha=0.3)
+
+    # Deletions (negated, curve + filled area below 0)
+    ax.plot(resampled_df.index, -resampled_df['deletions'],
+            color='red', linewidth=1.5, label=f'{time_label} Deletions')
+    ax.fill_between(resampled_df.index, -resampled_df['deletions'], 0,
+                    color='red', alpha=0.3)
+
+    # Axis formatting
+    ax.set_xlabel("Date", fontsize=12)
+    ax.set_ylabel("Lines of Code (symlog scale)", fontsize=12)
+    ax.set_yscale("symlog")  
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+    plt.show()
+```
+
+```{python}
+def visualise_release_timeline(calculator: MetricsCalculator) -> None:
+
+    sns.set_theme(style="whitegrid", palette="viridis")
+    fig, ax = plt.subplots(figsize=(12, 5))
+
+    df = calculator.get_release_and_pr_timeline()
+    days = calculator.days 
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        plt.tight_layout()
+        plt.show()
+        return
+        
+    df['release_date'] = pd.to_datetime(df['release_date'])
+    df = df.sort_values('release_date')
+
+    for date in df['release_date']:
+        ax.axvline(x=date, color='green', linestyle='--', linewidth=1, alpha=0.7)
+
+    ax.scatter(df['release_date'], df['merged_pr_count'], color='purple', s=60, zorder=3)
+
+    ax.set_xlabel("Release Date", fontsize=10) 
+    ax.set_ylabel("Merged PRs in Release", fontsize=10) 
+
+    ax.tick_params(axis='x', rotation=45, labelsize=9) 
+
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+    plt.show()
+
+
+```
+
+::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
+
+`{python} float("{:.2f}".format(calculator_all.get_active_items()["total"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_all.get_active_items()["open_prs"]} PRs, {calculator_all.get_active_items()["open_issues"]} issues</span>") 
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
+
+`{python} calculator_all.get_community_engagement()["total_engagements"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_all.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+```
+
+:::
+
+::: {.valuebox icon="lightning-fill" color="vb-primary" title="Throughput"}
+
+`{python} calculator_all.get_throughput()`
+
+```{python}
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+```
+
+:::
+
+::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
+
+`{python} calculator_all.get_total_releases()["releases"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_all.get_total_releases()["churn"]} PRs merged</span>") 
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
+```
+
+```{python}
+viusalise_backlog_trend(calculator=calculator_all)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
+```
+
+```{python}
+visualise_code_churn(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
+```
+
+```{python}
+visualise_release_timeline(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+
+# 90d
+
+## Row
+
+::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_active_items()["total"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_90d.get_active_items()["open_prs"]} PRs, {calculator_90d.get_active_items()["open_issues"]} issues</span>") 
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
+
+`{python} calculator_90d.get_community_engagement()["total_engagements"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+```
+
+:::
+
+::: {.valuebox icon="lightning-fill" color="vb-primary" title="Throughput"}
+
+`{python} calculator_90d.get_throughput()`
+
+```{python}
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+```
+
+:::
+
+::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
+
+`{python} calculator_90d.get_total_releases()["releases"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_90d.get_total_releases()["churn"]} PRs merged</span>") 
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
+```
+
+```{python}
+viusalise_backlog_trend(calculator=calculator_90d)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
+```
+
+```{python}
+visualise_code_churn(calculator=calculator_90d)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
+```
+
+```{python}
+visualise_release_timeline(calculator=calculator_90d)
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+# 60d
+
+## Row
+
+::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_active_items()["total"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_60d.get_active_items()["open_prs"]} PRs, {calculator_60d.get_active_items()["open_issues"]} issues</span>") 
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
+
+`{python} calculator_60d.get_community_engagement()["total_engagements"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+```
+
+:::
+
+::: {.valuebox icon="lightning-fill" color="vb-primary" title="Throughput"}
+
+`{python} calculator_60d.get_throughput()`
+
+```{python}
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+```
+
+:::
+
+::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
+
+`{python} calculator_60d.get_total_releases()["releases"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_60d.get_total_releases()["churn"]} PRs merged</span>") 
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
+```
+
+```{python}
+viusalise_backlog_trend(calculator=calculator_60d)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
+```
+
+```{python}
+visualise_code_churn(calculator=calculator_60d)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
+```
+
+```{python}
+visualise_release_timeline(calculator=calculator_60d)
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+
+
+# 30d
+
+## Row
+
+::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_active_items()["total"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_30d.get_active_items()["open_prs"]} PRs, {calculator_30d.get_active_items()["open_issues"]} issues</span>") 
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
+
+`{python} calculator_30d.get_community_engagement()["total_engagements"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+```
+
+:::
+
+::: {.valuebox icon="lightning-fill" color="vb-primary" title="Throughput"}
+
+`{python} calculator_30d.get_throughput()`
+
+```{python}
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+```
+
+:::
+
+::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
+
+`{python} calculator_30d.get_total_releases()["releases"]`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_30d.get_total_releases()["churn"]} PRs merged</span>") 
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
+```
+
+```{python}
+viusalise_backlog_trend(calculator=calculator_30d)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
+```
+
+```{python}
+visualise_code_churn(calculator=calculator_30d)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
+```
+
+```{python}
+visualise_release_timeline(calculator=calculator_30d)
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
