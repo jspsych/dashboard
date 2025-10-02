@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://smpdl.github.io/jsPsych-Dashboard/index.html</loc>
-    <lastmod>2025-10-02T20:15:31.413Z</lastmod>
+    <loc>https://jspsych.github.io/dashboard/pullrequests.html</loc>
+    <lastmod>2025-10-02T20:21:34.443Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jspsych.github.io/dashboard/issues.html</loc>
+    <lastmod>2025-10-02T20:21:34.443Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jspsych.github.io/dashboard/discussions.html</loc>
+    <lastmod>2025-10-02T20:21:34.443Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jspsych.github.io/dashboard/overview.html</loc>
+    <lastmod>2025-10-02T20:21:34.443Z</lastmod>
   </url>
 </urlset>
