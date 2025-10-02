@@ -1,3 +1,7 @@
+# Quarto Project Configuration
+# This file configures the Quarto project settings, including website structure,
+# navigation bar, and formatting options.
+
 project:
   type: website
   output-dir: docs
@@ -8,6 +12,7 @@ website:
   navbar: 
     search: false
     title: "JsPsych Dashboard"
+    favicon: assets/jspsych-favicon.png
     logo: assets/jspsych-favicon.png
     left: 
       - text: "Overview"

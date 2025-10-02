@@ -317,7 +317,7 @@ class MetricsCalculator:
         """
         prs_df = self._get_data_as_df('pull_requests', 'created_at')
         if prs_df.empty:
-            return 0.0
+            return {"merge_rate": 0.0, "total_merged": 0, "total_prs": 0}
         merged = prs_df[prs_df['state'] == 'merged']
         return {
             "merge_rate": 100.0 * len(merged) / len(prs_df) if len(prs_df) > 0 else 0.0,
@@ -417,7 +417,7 @@ class MetricsCalculator:
         """
         issues_df = self._get_data_as_df('issues', 'created_at')
         if issues_df.empty:
-            return 0.0
+            return {"close_rate": 0.0, "total_closed": 0, "total_issues": 0}
         closed = issues_df[issues_df['state'] == 'closed']
         return {
             "close_rate": 100.0 * len(closed) / len(issues_df) if len(issues_df) > 0 else 0.0,

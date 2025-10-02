@@ -7,9 +7,7 @@ matplotlib
 jupyter-cache
 python-dotenv
 jupyterlab
-shinylive
 htmltools
 typing
 httpx
 seaborn
-statsmodels

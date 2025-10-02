@@ -25,11 +25,9 @@ class GitHubDataPipeline:
         logger.info(f"Fetching pull requests with state: {state}")
         endpoint = f"pulls?state={state}&per_page=100&sort=updated&direction=desc"
         pr_data = fetch_api(endpoint, self.github_token)
-        
         if not pr_data:
             logger.error("Failed to fetch pull request data")
             return 0
-        
         stored_count = 0
         for pr in pr_data:
             processed_pr = self._process_pull_request(pr)
@@ -38,6 +36,25 @@ class GitHubDataPipeline:
         self.db.update_last_sync_time('pr')
         self.db.set_metadata('total_prs_tracked', str(stored_count))
         logger.info(f"Stored {stored_count} pull requests")
+        return stored_count
+
+    def fetch_and_store_pull_requests_since(self, since_iso: Optional[str]) -> int:
+        """Incrementally fetch pull requests updated since the given ISO timestamp.
+        """
+        logger.info("Incremental fetch for pull requests...")
+        endpoint = "pulls?state=all&per_page=100&sort=updated&direction=desc"
+        pr_data = fetch_api(endpoint, self.github_token)
+        if not pr_data:
+            logger.error("Failed to fetch pull request data (incremental)")
+            return 0
+        stored_count = 0
+        for pr in pr_data:
+            if since_iso and pr.get('updated_at') and pr['updated_at'] <= since_iso:
+                break
+            processed_pr = self._process_pull_request(pr)
+            if self.db.upsert_pull_request(processed_pr):
+                stored_count += 1
+        logger.info(f"Incremental stored {stored_count} pull requests")
         return stored_count
     
     def fetch_add_del_data(self) -> int:
@@ -67,6 +84,40 @@ class GitHubDataPipeline:
                 print(f"Failed to fetch data for PR #{pr_number}")
         logger.info("Completed fetching additions and deletions.")
         return count
+
+    def fetch_add_del_for_prs(self, pr_numbers: List[int]) -> int:
+        """Fetch additions and deletions for specified PR numbers only (incremental)."""
+        if not pr_numbers:
+            return 0
+        logger.info(f"Fetching additions/deletions for {len(pr_numbers)} PRs (incremental)...")
+        count = 0
+        existing_prs = {pr['number']: pr for pr in self.db.get_pull_requests()}
+        for pr_number in pr_numbers:
+            endpoint = f"pulls/{pr_number}"
+            pr_data = fetch_api(endpoint, self.github_token)
+            if pr_data and isinstance(pr_data, dict):
+                additions = pr_data.get('additions', 0)
+                deletions = pr_data.get('deletions', 0)
+                changed_files = pr_data.get('changed_files', 0)
+                commits_count = pr_data.get('commits', 0)
+                base = existing_prs.get(pr_number)
+                if base is None:
+                    processed_pr = self._process_pull_request(pr_data)
+                    processed_pr['additions'] = additions
+                    processed_pr['deletions'] = deletions
+                    processed_pr['changed_files'] = changed_files
+                    processed_pr['commits_count'] = commits_count
+                    self.db.upsert_pull_request(processed_pr)
+                else:
+                    updated_pr = dict(base)
+                    updated_pr['additions'] = additions
+                    updated_pr['deletions'] = deletions
+                    updated_pr['changed_files'] = changed_files
+                    updated_pr['commits_count'] = commits_count
+                    self.db.upsert_pull_request(updated_pr)
+                count += 1
+        logger.info(f"Incremental additions/deletions updated for {count} PRs")
+        return count
     
     def fetch_and_store_issues(self, state: str = "all") -> int:
         """Fetch issues from GitHub and store in database"""
@@ -86,6 +137,25 @@ class GitHubDataPipeline:
         self.db.set_metadata('total_issues_tracked', str(stored_count))
         logger.info(f"Stored {stored_count} issues")
         return stored_count
+
+    def fetch_and_store_issues_since(self, since_iso: Optional[str]) -> int:
+        """Incrementally fetch issues updated since the given ISO timestamp."""
+        logger.info("Incremental fetch for issues...")
+        endpoint = "issues?state=all&per_page=100&sort=updated&direction=desc"
+        if since_iso:
+            endpoint += f"&since={since_iso}"
+        issue_data = fetch_api(endpoint, self.github_token)
+        if not issue_data:
+            logger.error("Failed to fetch issue data (incremental)")
+            return 0
+        stored_count = 0
+        for issue in issue_data:
+            if 'pull_request' not in issue:
+                processed_issue = self._process_issue(issue)
+                if self.db.upsert_issue(processed_issue):
+                    stored_count += 1
+        logger.info(f"Incremental stored {stored_count} issues")
+        return stored_count
     
     def fetch_and_store_reviews_for_all_prs(self) -> int:
         """Fetch reviews for all pull requests in the database."""
@@ -103,6 +173,23 @@ class GitHubDataPipeline:
                     if self.db.upsert_review(processed_review):
                         total_reviews_stored += 1
         logger.info(f"Stored {total_reviews_stored} reviews in total.")
+        return total_reviews_stored
+
+    def fetch_and_store_reviews_for_prs(self, pr_numbers: List[int]) -> int:
+        """Fetch reviews only for the provided PR numbers (incremental path)."""
+        if not pr_numbers:
+            return 0
+        logger.info(f"Fetching reviews for {len(pr_numbers)} PRs (incremental)...")
+        total_reviews_stored = 0
+        for pr_number in pr_numbers:
+            endpoint = f"pulls/{pr_number}/reviews"
+            reviews_data = fetch_api(endpoint, self.github_token)
+            if reviews_data:
+                for review in reviews_data:
+                    processed_review = self._process_review(review, pr_number)
+                    if self.db.upsert_review(processed_review):
+                        total_reviews_stored += 1
+        logger.info(f"Incremental stored {total_reviews_stored} reviews")
         return total_reviews_stored
 
     def fetch_and_store_comments(self) -> int:
@@ -203,14 +290,14 @@ class GitHubDataPipeline:
 
     def _process_comment(self, comment: Dict[str, Any]) -> Dict[str, Any]:
         """Process raw comment data from GitHub API"""
-        # Determine if it's a PR or issue comment
         issue_url = comment['issue_url']
-        is_pr = 'pull' in issue_url
         number = int(issue_url.split('/')[-1])
-
+        # Cross-reference with pull_requests table to determine if this is a PR comment
+        pr = self.db.get_pull_request_by_number(number)
+        is_pr = pr is not None
         return {
             'id': comment['id'],
-            'issue_number': number if not is_pr else None,
+            'issue_number': None if is_pr else number,
             'pr_number': number if is_pr else None,
             'user_login': comment['user']['login'],
             'body': comment.get('body'),
@@ -256,5 +343,38 @@ class GitHubDataPipeline:
             'comments': comment_count,
             'releases': release_count,
             'additions_deletions_fetched': add_count,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+
+    def sync_incremental(self):
+        """Incremental sync of PRs, issues, and additions/deletions"""
+        logger.info("Starting incremental data sync (PRs, issues, reviews)...")
+        from datetime import datetime
+        last_inc_raw = self.db.get_last_sync_time('incremental')
+        last_full_raw = self.db.get_last_sync_time('full')
+        default_time = "2000-01-01T00:00:00"
+        last_inc_dt = datetime.fromisoformat(last_inc_raw) if last_inc_raw else datetime.fromisoformat(default_time)
+        last_full_dt = datetime.fromisoformat(last_full_raw) if last_full_raw else datetime.fromisoformat(default_time)
+        last_inc = max(last_inc_dt, last_full_dt).isoformat()
+        pr_count = self.fetch_and_store_pull_requests_since(last_inc)
+        updated_pr_numbers: List[int] = []
+        endpoint = "pulls?state=all&per_page=100&sort=updated&direction=desc"
+        pr_data = fetch_api(endpoint, self.github_token)
+        if pr_data:
+            for pr in pr_data:
+                if not last_inc or (pr.get('updated_at') and pr['updated_at'] > last_inc):
+                    updated_pr_numbers.append(pr['number'])
+                else:
+                    break
+        issue_count = self.fetch_and_store_issues_since(last_inc)
+        add_del_count = self.fetch_add_del_for_prs(updated_pr_numbers)
+        self.db.update_last_sync_time('incremental')
+        logger.info(
+            f"Incremental sync completed: {pr_count} PRs, {issue_count} issues, {add_del_count} PR stats."
+        )
+        return {
+            'pull_requests': pr_count,
+            'issues': issue_count,
+            'additions_deletions_updated': add_del_count,
             'timestamp': datetime.utcnow().isoformat()
         }

@@ -56,6 +56,7 @@ class DatabaseManager:
             ('last_pr_sync', '2020-01-01T00:00:00'),
             ('last_issue_sync', '2020-01-01T00:00:00'),
             ('last_full_sync', '2020-01-01T00:00:00'),
+            ('last_incremental_sync', '2020-01-01T00:00:00'),
             ('total_prs_tracked', '0'),
             ('total_issues_tracked', '0'),
             ('database_version', '1.0'),
@@ -227,6 +228,17 @@ class DatabaseManager:
                 summary['total'] += row['count']
             
             return summary
+        
+    def get_pull_request_by_number(self, number: int) -> Optional[Dict[str, Any]]:
+        """Get a single pull request by its number."""
+        with self.get_connection() as conn:
+            row = conn.execute('SELECT * FROM pull_requests WHERE number = ?', (number,)).fetchone()
+            if row:
+                pr = dict(row)
+                pr['labels'] = DatabaseHelper.deserialize_labels(pr['labels'])
+                pr['assignees'] = DatabaseHelper.deserialize_assignees(pr['assignees'])
+                return pr
+            return None
     
     def upsert_review(self, review_data: Dict[str, Any]) -> bool:
         """Insert or update a review record"""
@@ -316,9 +328,10 @@ class DatabaseManager:
             ''', (key, value, now))
             conn.commit()
     
-    def get_last_sync_time(self, sync_type: str) -> Optional[str]:
-        """Get last sync timestamp for a specific sync type"""
-        return self.get_metadata(f'last_{sync_type}_sync')
+    def get_last_sync_time(self) -> Optional[str]:
+        with self.get_connection() as conn:
+            row = conn.execute('SELECT updated_at FROM metadata WHERE key = ?', ('last_pr_sync',)).fetchone()
+            return row['updated_at'] if row else None
     
     def update_last_sync_time(self, sync_type: str):
         """Update last sync timestamp for a specific sync type"""

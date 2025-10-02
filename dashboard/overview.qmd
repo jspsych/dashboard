@@ -2,6 +2,7 @@
 format: 
     dashboard:
         scrolling: true
+        title: Overview
 ---
 
 # All
@@ -17,7 +18,7 @@ import numpy as np
 import sys
 import os
 import matplotlib.dates as mdates
-
+import datetime
 
 project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
 
@@ -25,12 +26,14 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from src.metrics_calculator import MetricsCalculator
+from src.database import DatabaseManager
 
 calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
 calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
 calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
 calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
 
+db = DatabaseManager()
 ```
 
 ```{python}
@@ -252,6 +255,10 @@ visualise_release_timeline(calculator=calculator_all)
 
 ## Row
 
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
 
 # 90d
 
@@ -340,6 +347,9 @@ visualise_release_timeline(calculator=calculator_90d)
 
 ## Row
 
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
 
 # 60d
 
@@ -425,6 +435,10 @@ visualise_release_timeline(calculator=calculator_60d)
 ```
 
 :::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
 
 ## Row
 
@@ -514,4 +528,10 @@ visualise_release_timeline(calculator=calculator_30d)
 ```
 
 :::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
 
