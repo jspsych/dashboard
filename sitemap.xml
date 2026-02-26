@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://jspsych.github.io/dashboard/pullrequests.html</loc>
-    <lastmod>2026-02-25T05:57:26.807Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jspsych.github.io/dashboard/issues.html</loc>
-    <lastmod>2026-02-25T05:57:26.807Z</lastmod>
-  </url>
-  <url>
     <loc>https://jspsych.github.io/dashboard/discussions.html</loc>
-    <lastmod>2026-02-25T05:57:26.807Z</lastmod>
+    <lastmod>2026-02-26T05:54:27.439Z</lastmod>
   </url>
   <url>
     <loc>https://jspsych.github.io/dashboard/overview.html</loc>
-    <lastmod>2026-02-25T05:57:26.807Z</lastmod>
+    <lastmod>2026-02-26T05:54:27.439Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jspsych.github.io/dashboard/issues.html</loc>
+    <lastmod>2026-02-26T05:54:27.439Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jspsych.github.io/dashboard/pullrequests.html</loc>
+    <lastmod>2026-02-26T05:54:27.439Z</lastmod>
   </url>
 </urlset>
