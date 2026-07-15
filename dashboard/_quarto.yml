@@ -21,6 +21,8 @@ website:
         href: pullrequests.qmd
       - text: "Issues"
         href: issues.qmd
+      - text: "Community Repos"
+        href: community.qmd
       - text: "Discussions"
         href: discussions.qmd
     right:

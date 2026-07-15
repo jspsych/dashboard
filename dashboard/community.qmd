@@ -1,0 +1,240 @@
+---
+format:
+    dashboard:
+        scrolling: true
+        title: "Community Repos"
+---
+
+# jspsych-contrib
+
+## Row
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import sys
+import os
+import datetime
+
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from src.metrics_calculator import MetricsCalculator
+from src.database import DatabaseManager
+from src import repos as repos_module
+
+# Community repos tracked by the pipeline (Goal 4: rate of contribution to
+# community repositories). The two section headers below are hardcoded
+# because Quarto page headers can't be generated dynamically, but the repo
+# names themselves are sourced from config/repos.json via repos_module.
+community_repos = repos_module.repo_names(role='community')
+
+contrib_repo = "jspsych/jspsych-contrib"
+timelines_repo = "jspsych/jspsych-timelines"
+
+contrib_all = MetricsCalculator(db_path="../data/analytics.db", days=None, repo=contrib_repo)
+contrib_90d = MetricsCalculator(db_path="../data/analytics.db", days=90, repo=contrib_repo)
+
+timelines_all = MetricsCalculator(db_path="../data/analytics.db", days=None, repo=timelines_repo)
+timelines_90d = MetricsCalculator(db_path="../data/analytics.db", days=90, repo=timelines_repo)
+
+db = DatabaseManager("../data/analytics.db")
+```
+
+```{python}
+def visualise_contribution_rate(calculator: MetricsCalculator, repo_label: str) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_contribution_rate(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title(f"Contributions per Quarter: {repo_label}")
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period_label'] = pd.to_datetime(df['period']).dt.to_period('Q').astype(str)
+    x = np.arange(len(df))
+    width = 0.35
+    ax.bar(x - width / 2, df['merged_prs'], width, label='Merged PRs', color=sns.color_palette('Set2')[0])
+    ax.bar(x + width / 2, df['opened_issues'], width, label='Opened Issues', color=sns.color_palette('Set2')[1])
+    ax.set_xticks(x)
+    ax.set_xticklabels(df['period_label'], rotation=45, ha='right')
+    ax.set_xlabel('Quarter')
+    ax.set_ylabel('Count')
+    ax.set_title(f"Contributions per Quarter: {repo_label}")
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_new_contributors(calculator: MetricsCalculator, repo_label: str) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_new_contributors_timeline(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title(f"New Contributors per Quarter: {repo_label}")
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period_label'] = pd.to_datetime(df['period']).dt.to_period('Q').astype(str)
+    ax.bar(df['period_label'], df['new_contributors'], color=sns.color_palette('Set2')[2])
+    ax.set_xlabel('Quarter')
+    ax.set_ylabel('New Contributors')
+    ax.set_title(f"New Contributors per Quarter: {repo_label}")
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def format_last_sync(repo: str) -> str:
+    ts = db.get_last_sync_time(repo=repo)
+    if not ts:
+        return "Last Sync Time: N/A"
+    return "Last Sync Time: " + datetime.datetime.fromisoformat(ts.replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"
+```
+
+::: {.valuebox icon="graph-up-arrow" color="vb-primary" title="Total Contributions (All Time)"}
+
+`{python} contrib_all.get_contributor_summary()["total_contributions"]`
+
+```{python}
+htmltools.HTML(f"<span>PRs + issues + comments + reviews</span>")
+```
+
+:::
+
+::: {.valuebox icon="people-fill" color="vb-primary" title="Unique Contributors (All Time)"}
+
+`{python} contrib_all.get_contributor_summary()["total_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>unique contributors</span>")
+```
+
+:::
+
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New Contributors (Last 90 Days)"}
+
+`{python} contrib_90d.get_contributor_summary()["new_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>first-time contributors in the last 90 days</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-bar-chart-fill\"> </i> <span class=\"ms-2\"> Contributions per Quarter</span> </span>")
+```
+
+```{python}
+visualise_contribution_rate(calculator=contrib_all, repo_label="jspsych-contrib")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-plus\"> </i> <span class=\"ms-2\"> New Contributors per Quarter</span> </span>")
+```
+
+```{python}
+visualise_new_contributors(calculator=contrib_all, repo_label="jspsych-contrib")
+```
+
+:::
+
+## Row
+
+`{python} format_last_sync(contrib_repo)`
+
+## Row
+
+# jspsych-timelines
+
+## Row
+
+::: {.valuebox icon="graph-up-arrow" color="vb-primary" title="Total Contributions (All Time)"}
+
+`{python} timelines_all.get_contributor_summary()["total_contributions"]`
+
+```{python}
+htmltools.HTML(f"<span>PRs + issues + comments + reviews</span>")
+```
+
+:::
+
+::: {.valuebox icon="people-fill" color="vb-primary" title="Unique Contributors (All Time)"}
+
+`{python} timelines_all.get_contributor_summary()["total_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>unique contributors</span>")
+```
+
+:::
+
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New Contributors (Last 90 Days)"}
+
+`{python} timelines_90d.get_contributor_summary()["new_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>first-time contributors in the last 90 days</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-bar-chart-fill\"> </i> <span class=\"ms-2\"> Contributions per Quarter</span> </span>")
+```
+
+```{python}
+visualise_contribution_rate(calculator=timelines_all, repo_label="jspsych-timelines")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-plus\"> </i> <span class=\"ms-2\"> New Contributors per Quarter</span> </span>")
+```
+
+```{python}
+visualise_new_contributors(calculator=timelines_all, repo_label="jspsych-timelines")
+```
+
+:::
+
+## Row
+
+`{python} format_last_sync(timelines_repo)`
+
+## Row
