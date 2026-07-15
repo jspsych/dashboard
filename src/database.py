@@ -3,14 +3,14 @@ Database manager module
 Handles SQLite database operations, CRUD operations, and data management
 """
 
-import sqlite3
-import os
-from datetime import datetime
-from typing import Optional, List, Dict, Any
-from contextlib import contextmanager
 import logging
+import os
+import sqlite3
+from contextlib import contextmanager
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from .models import DatabaseSchema, DatabaseHelper
+from .models import DatabaseHelper, DatabaseSchema
 
 
 class DatabaseManager:
@@ -363,7 +363,7 @@ class DatabaseManager:
                 GROUP BY DATE(created_at), state
                 
                 ORDER BY date DESC
-            '''.format(days)
+            '''.format(days, days)
             
             rows = conn.execute(query).fetchall()
             return [dict(row) for row in rows]

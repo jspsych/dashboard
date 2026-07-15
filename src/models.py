@@ -2,10 +2,10 @@
 Database models and schema definitions
 """
 
-from datetime import datetime
-from typing import Optional, List
 import json
 import re
+from datetime import datetime
+from typing import List, Optional
 
 
 class DatabaseSchema:

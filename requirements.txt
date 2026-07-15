@@ -11,3 +11,4 @@ htmltools
 typing
 httpx
 seaborn
+ruff

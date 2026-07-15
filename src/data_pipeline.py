@@ -1,11 +1,10 @@
-import os
 import logging
 from datetime import datetime
-from typing import Dict, List, Any, Optional
-from .github_client import fetch_api
-from .database import DatabaseManager
-from .models import DatabaseHelper
+from typing import Any, Dict, List, Optional
+
 from .config import Config
+from .database import DatabaseManager
+from .github_client import fetch_api
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

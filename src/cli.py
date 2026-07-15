@@ -1,6 +1,6 @@
 import argparse
-import sys
 import subprocess
+import sys
 
 from .data_pipeline import GitHubDataPipeline
 
