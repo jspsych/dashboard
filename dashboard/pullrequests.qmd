@@ -14,6 +14,7 @@ format:
 import htmltools
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import seaborn as sns
 import numpy as np
 import sys
@@ -84,6 +85,68 @@ def visualise_pr_size_distribution(calculator: MetricsCalculator) -> None:
     plt.show()
 ```
 
+```{python}
+def visualise_merge_time_trend(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(14, 8))
+    df = calculator.get_pr_merge_time_trend(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Median PR Merge Time by Quarter')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ax.plot(df['period'], df['community'], marker='o', markersize=4,
+            label='Community', color=sns.color_palette('Set2')[1])
+    ax.plot(df['period'], df['core'], marker='o', markersize=4,
+            label='Core Team', color=sns.color_palette('Set2')[0])
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Median Merge Time (days)')
+    ax.set_title('Median PR Merge Time by Quarter')
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_first_response_trend(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(14, 8))
+    df = calculator.get_pr_first_response_trend(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Median Time to First Response by Quarter')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ax.plot(df['period'], df['median_days'], marker='o', markersize=4,
+            label='Median Time to First Response', color=sns.color_palette('Set2')[2])
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Time to First Response (days)')
+    ax.set_title('Median Time to First Response by Quarter')
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+```
+
 ::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time"}
 
 `{python} float("{:.2f}".format(calculator_all.get_median_pr_merge_time()))`
@@ -121,7 +184,17 @@ htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_all.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_all.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_all.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -129,7 +202,7 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
 ```
@@ -141,13 +214,39 @@ visualise_merge_time_distribution(calculator=calculator_all)
 :::
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
 ```
 
 ```{python}
 visualise_pr_size_distribution(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-graph-up\"> </i> <span class=\"ms-2\">Median merge time by quarter</span> </span>")
+```
+
+```{python}
+visualise_merge_time_trend(calculator=calculator_all)
+```
+
+:::
+
+::: {.card}
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-check\"> </i> <span class=\"ms-2\">Median time to first response by quarter</span> </span>")
+```
+
+```{python}
+visualise_first_response_trend(calculator=calculator_all)
 ```
 
 :::
@@ -199,7 +298,17 @@ htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_90d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_90d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -207,7 +316,7 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
 ```
@@ -219,7 +328,7 @@ visualise_merge_time_distribution(calculator=calculator_90d)
 :::
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
 ```
@@ -278,7 +387,17 @@ htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_60d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_60d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -287,7 +406,7 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
 ```
@@ -299,7 +418,7 @@ visualise_merge_time_distribution(calculator=calculator_60d)
 :::
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
 ```
@@ -358,7 +477,17 @@ htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_30d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_30d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -366,7 +495,7 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
 ```
@@ -378,7 +507,7 @@ visualise_merge_time_distribution(calculator=calculator_30d)
 :::
 
 ::: {.card}
-```{python} 
+```{python}
 import htmltools
 htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
 ```

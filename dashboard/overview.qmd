@@ -166,10 +166,70 @@ def visualise_release_timeline(calculator: MetricsCalculator) -> None:
     ax.tick_params(axis='x', rotation=45, labelsize=9) 
 
     ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
 
 
+```
+
+```{python}
+def visualise_new_contributors_per_quarter(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_cumulative_contributors(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('New Contributors per Quarter')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ax.bar(df['period'], df['new_contributors'], width=60,
+           color=sns.color_palette('Set2')[2])
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.set_xlabel('Year')
+    ax.set_ylabel('New Contributors')
+    ax.set_title('New Contributors per Quarter')
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_cumulative_contributors(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_cumulative_contributors(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Cumulative Contributors')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ax.plot(df['period'], df['cumulative_contributors'],
+            color=sns.color_palette('Set2')[0], linewidth=2)
+    ax.fill_between(df['period'], df['cumulative_contributors'], 0,
+                     color=sns.color_palette('Set2')[0], alpha=0.3)
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Cumulative Contributors')
+    ax.set_title('Cumulative Contributors')
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
 ```
 
 ::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
@@ -249,6 +309,32 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 
 ```{python}
 visualise_release_timeline(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-plus\"> </i> <span class=\"ms-2\"> New contributors per quarter</span> </span>")
+```
+
+```{python}
+visualise_new_contributors_per_quarter(calculator=calculator_all)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-graph-up-arrow\"> </i> <span class=\"ms-2\"> Cumulative contributors</span> </span>")
+```
+
+```{python}
+visualise_cumulative_contributors(calculator=calculator_all)
 ```
 
 :::

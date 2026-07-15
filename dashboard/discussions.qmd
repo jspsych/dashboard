@@ -13,6 +13,7 @@ format:
 import htmltools
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import seaborn as sns
 import numpy as np
 import sys
@@ -102,6 +103,36 @@ def visualise_discussions_by_category(calculator: MetricsCalculator) -> None:
     plt.show()
 ```
 
+```{python}
+def visualise_discussion_response_trend(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_discussion_response_trend(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Median Time to First Response by Quarter')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ax.plot(df['period'], df['median_days'], marker='o', markersize=4,
+            label='Median Time to First Response', color=sns.color_palette('Set2')[2])
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Time to First Response (days)')
+    ax.set_title('Median Time to First Response by Quarter')
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+```
+
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
 
 `{python} float("{:.2f}".format(calculator_all.get_med_time_to_first_discussion_response()))`
@@ -154,6 +185,20 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 
 ```{python}
 visualise_discussions_by_category(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-graph-up\"> </i> <span class=\"ms-2\">Median time to first response by quarter</span> </span>")
+```
+
+```{python}
+visualise_discussion_response_trend(calculator=calculator_all)
 ```
 
 :::
