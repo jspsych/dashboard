@@ -17,6 +17,8 @@ website:
     left: 
       - text: "Overview"
         href: overview.qmd
+      - text: "Goals"
+        href: goals.qmd
       - text: "Pull Requests"
         href: pullrequests.qmd
       - text: "Issues"
