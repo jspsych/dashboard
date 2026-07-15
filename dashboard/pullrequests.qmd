@@ -96,7 +96,7 @@ htmltools.HTML(f"<span>days to merge a pull request that was opened during this 
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_all.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_all.get_med_time_to_first_response_prs()))`
 
 ```{python}
 htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
@@ -174,7 +174,7 @@ htmltools.HTML(f"<span>days to merge a pull request that was opened during this 
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_90d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_90d.get_med_time_to_first_response_prs()))`
 
 ```{python}
 htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
@@ -254,7 +254,7 @@ htmltools.HTML(f"<span>days to merge a pull request that was opened during this 
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_60d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_60d.get_med_time_to_first_response_prs()))`
 
 ```{python}
 htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
@@ -333,7 +333,7 @@ htmltools.HTML(f"<span>days to merge a pull request that was opened during this 
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_30d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_30d.get_med_time_to_first_response_prs()))`
 
 ```{python}
 htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 

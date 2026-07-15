@@ -7,15 +7,26 @@ a wide range of metrics related to library health, pull requests, issues, and co
 engagement.
 """
 
-import sys
-import os
 
 
-import pandas as pd
-import numpy as np
-from .database import DatabaseManager
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any, List
+from typing import Dict, Optional
+
+import numpy as np
+import pandas as pd
+
+from . import team
+from .database import DatabaseManager
+
+# Maps table name -> author login column used for bot filtering. Tables not
+# listed here (e.g. releases) are not filtered: a release published by a bot is
+# still a real release.
+_AUTHOR_COLUMNS = {
+    'pull_requests': 'user_login',
+    'issues': 'user_login',
+    'comments': 'user_login',
+    'reviews': 'reviewer_login',
+}
 
 
 class MetricsCalculator:
@@ -63,6 +74,22 @@ class MetricsCalculator:
         
         if df.empty:
             return pd.DataFrame()
+
+        # Centrally drop bot-authored rows. The author column varies by table;
+        # tables not in _AUTHOR_COLUMNS (e.g. releases) are left unfiltered.
+        author_column = _AUTHOR_COLUMNS.get(table_name)
+        if author_column and author_column in df.columns:
+            # user_type is only present on pull_requests and issues.
+            if 'user_type' in df.columns:
+                is_bot_mask = df.apply(
+                    lambda row: team.is_bot(row[author_column], row['user_type']),
+                    axis=1
+                )
+            else:
+                is_bot_mask = df[author_column].apply(team.is_bot)
+            df = df[~is_bot_mask].copy()
+            if df.empty:
+                return pd.DataFrame()
 
         if self.start_date and date_column in df.columns:
             df[date_column] = pd.to_datetime(df[date_column], utc=True)
@@ -137,6 +164,18 @@ class MetricsCalculator:
             "total_engagements": total_engagements
         }
 
+
+    def get_core_team_size(self) -> int:
+        """
+        Get the current number of contributors with merge access (the core team).
+
+        This is the Goal 1 sustainability metric, sourced from the maintained
+        roster in config/team.json.
+
+        Returns:
+            int: The current core team size.
+        """
+        return team.core_team_size()
 
     def get_throughput(self) -> int:
         """
@@ -271,7 +310,7 @@ class MetricsCalculator:
  
     def get_med_time_to_first_response_prs(self) -> float:
         """
-        Get the median time to first response (comment or review) on pull requests. Excludes comments by the changeset-bot.
+        Get the median time to first response (comment or review) on pull requests. Bot-authored comments and reviews are excluded via the central bot filter.
 
         Returns:
             float: The median time to first response in days.
@@ -290,13 +329,13 @@ class MetricsCalculator:
 
             first_comment_time = None
             if not comments_df.empty:
-                pr_comments = comments_df[(comments_df['pr_number'] == pr_number) & (comments_df['user_login'] != 'changeset-bot')]
+                pr_comments = comments_df[comments_df['pr_number'] == pr_number]
                 if not pr_comments.empty:
                     first_comment_time = pd.to_datetime(pr_comments['created_at'].min(), utc=True)
 
             first_review_time = None
             if not reviews_df.empty:
-                pr_reviews = reviews_df[(reviews_df['pr_number'] == pr_number) & (reviews_df['reviewer_login'] != 'changeset-bot')]
+                pr_reviews = reviews_df[reviews_df['pr_number'] == pr_number]
                 if not pr_reviews.empty:
                     first_review_time = pd.to_datetime(pr_reviews['submitted_at'].min(), utc=True)
 
