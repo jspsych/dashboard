@@ -26,6 +26,8 @@ _AUTHOR_COLUMNS = {
     'issues': 'user_login',
     'comments': 'user_login',
     'reviews': 'reviewer_login',
+    'discussions': 'author_login',
+    'discussion_comments': 'author_login',
 }
 
 
@@ -692,6 +694,226 @@ class MetricsCalculator:
             "total_contributors": len(window_logins),
             "new_contributors": new_contributors,
             "total_contributions": total_contributions
+        }
+
+    # discussion / support metrics (Goal 3: decrease the time for support
+    # responses; broaden participation in the support forum)
+    # -- valueboxes --
+
+    def get_med_time_to_first_discussion_response(self) -> float:
+        """
+        Get the median time to the first response on a discussion.
+
+        A "response" is any top-level comment or reply authored by someone
+        other than the discussion's own author (self-replies don't count as
+        support). Discussions are restricted to the current time window, but
+        their comments are looked up across all time, since a discussion
+        opened inside the window may not be answered until after it. Bot
+        authors are excluded via the central bot filter on both tables.
+        Discussions with no qualifying response are excluded from the median.
+
+        Returns:
+            float: The median time to first response in days, or 0.0 if
+                   there is no data.
+        """
+        discussions_df = self._get_data_as_df('discussions', 'created_at')
+        if discussions_df.empty:
+            return 0.0
+
+        comments_df = self._get_data_as_df(
+            'discussion_comments', 'created_at', ignore_time_filter=True)
+        if comments_df.empty:
+            return 0.0
+        comments_df = comments_df.copy()
+        comments_df['created_at'] = pd.to_datetime(comments_df['created_at'], utc=True)
+
+        times = []
+        for _, discussion in discussions_df.iterrows():
+            created = pd.to_datetime(discussion['created_at'], utc=True)
+            thread_comments = comments_df[
+                (comments_df['discussion_number'] == discussion['number']) &
+                (comments_df['author_login'] != discussion['author_login'])
+            ]
+            if thread_comments.empty:
+                continue
+            first_response = thread_comments['created_at'].min()
+            times.append((first_response - created).total_seconds() / 86400)
+
+        return float(np.median(times)) if times else 0.0
+
+    def get_med_time_to_answer(self) -> float:
+        """
+        Get the median time to answer for answered discussions.
+
+        Returns:
+            float: The median of (answer_created_at - created_at) in days,
+                   over discussions marked as answered in the current time
+                   window. Returns 0.0 if there is no data.
+        """
+        discussions_df = self._get_data_as_df('discussions', 'created_at')
+        if discussions_df.empty or 'answer_created_at' not in discussions_df.columns:
+            return 0.0
+
+        answered = discussions_df[
+            discussions_df['is_answered'].fillna(False).astype(bool) &
+            discussions_df['answer_created_at'].notna()
+        ].copy()
+        if answered.empty:
+            return 0.0
+
+        answered['created_at'] = pd.to_datetime(answered['created_at'], utc=True)
+        answered['answer_created_at'] = pd.to_datetime(answered['answer_created_at'], utc=True)
+        answered['time_to_answer'] = (
+            answered['answer_created_at'] - answered['created_at']
+        ).dt.total_seconds() / 86400
+        return float(answered['time_to_answer'].median())
+
+    def get_discussion_answer_rate(self) -> dict:
+        """
+        Get the discussion answer rate in the given time period.
+
+        The headline rate is computed across all discussion categories for
+        consistency with other "answer/close rate" metrics. A second rate is
+        also computed restricted to the Q&A category, since Q&A is the clear
+        support signal (General/Ideas discussions often legitimately go
+        unanswered).
+
+        Returns:
+            dict: A dictionary with:
+                - answer_rate: Percentage of all discussions answered.
+                - total_answered: Count of answered discussions (all categories).
+                - total_discussions: Count of all discussions.
+                - qa_answer_rate: Percentage of Q&A discussions answered.
+                - qa_answered: Count of answered Q&A discussions.
+                - qa_total: Count of Q&A discussions.
+        """
+        empty_result = {
+            "answer_rate": 0.0,
+            "total_answered": 0,
+            "total_discussions": 0,
+            "qa_answer_rate": 0.0,
+            "qa_answered": 0,
+            "qa_total": 0,
+        }
+        discussions_df = self._get_data_as_df('discussions', 'created_at')
+        if discussions_df.empty:
+            return empty_result
+
+        # is_answered is NULL (not False) for categories other than Q&A,
+        # since GitHub only supports marking an accepted answer there;
+        # fillna(False) avoids treating those NULLs as answered (NaN is
+        # truthy under a bare astype(bool)).
+        is_answered = discussions_df['is_answered'].fillna(False).astype(bool)
+        total_discussions = len(discussions_df)
+        total_answered = int(is_answered.sum())
+        answer_rate = 100.0 * total_answered / total_discussions if total_discussions > 0 else 0.0
+
+        qa_df = discussions_df[discussions_df.get('category') == 'Q&A']
+        qa_total = len(qa_df)
+        qa_answered = int(qa_df['is_answered'].fillna(False).astype(bool).sum()) if qa_total > 0 else 0
+        qa_answer_rate = 100.0 * qa_answered / qa_total if qa_total > 0 else 0.0
+
+        return {
+            "answer_rate": answer_rate,
+            "total_answered": total_answered,
+            "total_discussions": total_discussions,
+            "qa_answer_rate": qa_answer_rate,
+            "qa_answered": qa_answered,
+            "qa_total": qa_total,
+        }
+
+    # -- charts --
+
+    def get_responder_diversity(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the count of unique discussion responders per period, split into
+        core team vs. community.
+
+        This is a Goal 3 sustainability metric: broadening participation in
+        the support forum means more of the responses should come from the
+        community rather than just the core team.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'unique_responders',
+                          'core_team_responders', 'community_responders'].
+        """
+        columns = ['period', 'unique_responders', 'core_team_responders', 'community_responders']
+        comments_df = self._get_data_as_df('discussion_comments', 'created_at')
+        if comments_df.empty:
+            return pd.DataFrame(columns=columns)
+
+        comments_df = comments_df.copy()
+        comments_df['created_at'] = pd.to_datetime(comments_df['created_at'], utc=True)
+        core_logins = team.core_team_logins()
+
+        rows = []
+        for period, group in comments_df.groupby(pd.Grouper(key='created_at', freq=freq)):
+            authors = set(group['author_login'].unique())
+            rows.append({
+                'period': period,
+                'unique_responders': len(authors),
+                'core_team_responders': len(authors & core_logins),
+                'community_responders': len(authors - core_logins),
+            })
+
+        return pd.DataFrame(rows, columns=columns)
+
+    def get_discussions_opened_by_category(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the count of discussions opened per period, broken down by category.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'category', 'count'].
+        """
+        columns = ['period', 'category', 'count']
+        discussions_df = self._get_data_as_df('discussions', 'created_at')
+        if discussions_df.empty:
+            return pd.DataFrame(columns=columns)
+
+        discussions_df = discussions_df.copy()
+        discussions_df['created_at'] = pd.to_datetime(discussions_df['created_at'], utc=True)
+        discussions_df['category'] = discussions_df['category'].fillna('Uncategorized')
+
+        result = (
+            discussions_df.groupby([pd.Grouper(key='created_at', freq=freq), 'category'])
+            .size()
+            .reset_index(name='count')
+            .rename(columns={'created_at': 'period'})
+        )
+        return result[columns]
+
+    def get_response_share(self) -> dict:
+        """
+        Get the share of discussion responses authored by the core team vs.
+        the community in the current time window.
+
+        This is a Goal 3 sustainability metric: broadening participation in
+        the support forum means the community should account for a growing
+        share of responses, not just the core team.
+
+        Returns:
+            dict: A dictionary with:
+                - core_team_pct: Percentage of responses by core team members.
+                - community_pct: Percentage of responses by everyone else.
+                - total_responses: Total discussion comments in the window.
+        """
+        comments_df = self._get_data_as_df('discussion_comments', 'created_at')
+        if comments_df.empty:
+            return {"core_team_pct": 0.0, "community_pct": 0.0, "total_responses": 0}
+
+        core_logins = team.core_team_logins()
+        total_responses = len(comments_df)
+        core_count = int(comments_df['author_login'].isin(core_logins).sum())
+        community_count = total_responses - core_count
+
+        return {
+            "core_team_pct": 100.0 * core_count / total_responses,
+            "community_pct": 100.0 * community_count / total_responses,
+            "total_responses": total_responses,
         }
 
 

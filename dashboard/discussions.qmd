@@ -1,1 +1,283 @@
-This page is still under construction. Thank you!
+---
+format:
+    dashboard:
+        scrolling: true
+        title: "Discussions"
+---
+
+# All
+
+## Row
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import sys
+import os
+import datetime
+
+
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from src.metrics_calculator import MetricsCalculator
+from src.database import DatabaseManager
+
+
+calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
+calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
+calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None)
+
+db = DatabaseManager("../data/analytics.db")
+
+```
+
+```{python}
+def visualise_responder_diversity(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_responder_diversity(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Unique Discussion Responders per Quarter')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period_label'] = pd.to_datetime(df['period']).dt.to_period('Q').astype(str)
+    x = np.arange(len(df))
+    width = 0.6
+    ax.bar(x, df['core_team_responders'], width, label='Core Team',
+           color=sns.color_palette('Set2')[0])
+    ax.bar(x, df['community_responders'], width, bottom=df['core_team_responders'],
+           label='Community', color=sns.color_palette('Set2')[1])
+    ax.set_xticks(x)
+    ax.set_xticklabels(df['period_label'], rotation=45, ha='right')
+    ax.set_xlabel('Quarter')
+    ax.set_ylabel('Unique Responders')
+    ax.set_title('Unique Discussion Responders per Quarter')
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_discussions_by_category(calculator: MetricsCalculator) -> None:
+    sns.set_theme(style="whitegrid", palette="Set2")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    df = calculator.get_discussions_opened_by_category(freq='QE')
+    if df.empty:
+        ax.text(0.5, 0.5, 'No data available for this period',
+                horizontalalignment='center', verticalalignment='center',
+                transform=ax.transAxes, fontsize=12, color='red')
+        ax.set_title('Discussions Opened per Quarter by Category')
+        plt.tight_layout()
+        plt.show()
+        return
+
+    df = df.copy()
+    df['period_label'] = pd.to_datetime(df['period']).dt.to_period('Q').astype(str)
+    pivot = df.pivot_table(index='period_label', columns='category', values='count',
+                            fill_value=0, sort=False)
+    pivot = pivot.loc[sorted(pivot.index, key=lambda p: pd.Period(p))]
+    palette = sns.color_palette('Set2', n_colors=max(len(pivot.columns), 3))
+    pivot.plot(kind='bar', stacked=True, ax=ax, color=palette, width=0.7)
+    ax.set_xlabel('Quarter')
+    ax.set_ylabel('Discussions Opened')
+    ax.set_title('Discussions Opened per Quarter by Category')
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend(title='Category')
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    plt.tight_layout()
+    plt.show()
+```
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_all.get_med_time_to_first_discussion_response()))`
+
+```{python}
+htmltools.HTML(f"<span>days to first response on a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="check-circle-fill" color="vb-primary" title="Time to Answer"}
+
+`{python} float("{:.2f}".format(calculator_all.get_med_time_to_answer()))`
+
+```{python}
+htmltools.HTML(f"<span>days to an accepted answer for a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="patch-question-fill" color="vb-primary" title="Q&A Answer Rate"}
+
+`{python} float("{:.2f}".format(calculator_all.get_discussion_answer_rate()["qa_answer_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_all.get_discussion_answer_rate()['qa_answered']} Q&A discussions answered out of {calculator_all.get_discussion_answer_rate()['qa_total']} total</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-people-fill\"> </i> <span class=\"ms-2\">Unique Discussion Responders</span> </span>")
+```
+```{python}
+visualise_responder_diversity(calculator=calculator_all)
+```
+
+:::
+
+::: {.card}
+```{python}
+import htmltools
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-chat-left-text-fill\"> </i> <span class=\"ms-2\">Discussions Opened by Category</span> </span>")
+```
+
+
+```{python}
+visualise_discussions_by_category(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+# 90d
+
+## Row
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_med_time_to_first_discussion_response()))`
+
+```{python}
+htmltools.HTML(f"<span>days to first response on a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="check-circle-fill" color="vb-primary" title="Time to Answer"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_med_time_to_answer()))`
+
+```{python}
+htmltools.HTML(f"<span>days to an accepted answer for a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="patch-question-fill" color="vb-primary" title="Q&A Answer Rate"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_discussion_answer_rate()["qa_answer_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_90d.get_discussion_answer_rate()['qa_answered']} Q&A discussions answered out of {calculator_90d.get_discussion_answer_rate()['qa_total']} total</span>")
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+# 60d
+
+## Row
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_med_time_to_first_discussion_response()))`
+
+```{python}
+htmltools.HTML(f"<span>days to first response on a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="check-circle-fill" color="vb-primary" title="Time to Answer"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_med_time_to_answer()))`
+
+```{python}
+htmltools.HTML(f"<span>days to an accepted answer for a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="patch-question-fill" color="vb-primary" title="Q&A Answer Rate"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_discussion_answer_rate()["qa_answer_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_60d.get_discussion_answer_rate()['qa_answered']} Q&A discussions answered out of {calculator_60d.get_discussion_answer_rate()['qa_total']} total</span>")
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
+
+## Row
+
+# 30d
+
+## Row
+
+::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_med_time_to_first_discussion_response()))`
+
+```{python}
+htmltools.HTML(f"<span>days to first response on a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="check-circle-fill" color="vb-primary" title="Time to Answer"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_med_time_to_answer()))`
+
+```{python}
+htmltools.HTML(f"<span>days to an accepted answer for a discussion opened during this time window</span>")
+```
+
+:::
+
+::: {.valuebox icon="patch-question-fill" color="vb-primary" title="Q&A Answer Rate"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_discussion_answer_rate()["qa_answer_rate"]))`
+
+```{python}
+htmltools.HTML(f"<span>{calculator_30d.get_discussion_answer_rate()['qa_answered']} Q&A discussions answered out of {calculator_30d.get_discussion_answer_rate()['qa_total']} total</span>")
+```
+
+:::
+
+## Row
+
+`{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
