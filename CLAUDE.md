@@ -24,7 +24,7 @@ Run everything from the repo root:
 ## Gotchas
 
 - **Working directory matters.** The `.qmd` files hardcode `db_path="../data/analytics.db"` and insert the repo root into `sys.path` to import `src.*`. Always run `quarto render dashboard` from the repo root; the wrong cwd breaks both the import and the DB path.
-- **Two committed copies of the database exist**: `data/analytics.db` (top-level, the one the dashboard pages read) and `dashboard/data/analytics.db`. Treat `data/analytics.db` as canonical; flag the other rather than updating it.
+- `data/analytics.db` (repo root) is the canonical committed database; all code must reference it explicitly (the `.qmd` pages use `../data/analytics.db`). Never let a `DatabaseManager()` default-path call run with cwd `dashboard/` — it silently creates a second database there.
 - `_quarto.yml` sets `output-dir: docs`, but `dashboard/docs/` is gitignored — never commit rendered output. Deployment happens in CI (`.github/workflows/full-sync.yml`): a daily full sync then Quarto publish to the `gh-pages` branch.
 
 ## Workflow

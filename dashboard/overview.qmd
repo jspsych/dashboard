@@ -33,7 +33,7 @@ calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
 calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
 calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
 
-db = DatabaseManager()
+db = DatabaseManager("../data/analytics.db")
 ```
 
 ```{python}
