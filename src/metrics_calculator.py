@@ -15,7 +15,7 @@ from typing import Dict, Optional
 import numpy as np
 import pandas as pd
 
-from . import team
+from . import repos, team
 from .database import DatabaseManager
 
 # Maps table name -> author login column used for bot filtering. Tables not
@@ -39,7 +39,8 @@ class MetricsCalculator:
         end_date (datetime): The end date for the time window (current time).
         start_date (Optional[datetime]): The start date for the time window.
     """
-    def __init__(self, db_path: str = "../data/analytics.db", days: Optional[int] = 30):
+    def __init__(self, db_path: str = "../data/analytics.db", days: Optional[int] = 30,
+                 repo: Optional[str] = repos.MAIN_REPO):
         """
         Initializes the MetricsCalculator.
 
@@ -47,9 +48,14 @@ class MetricsCalculator:
             db_path (str): The path to the SQLite database file.
             days (Optional[int]): The number of days for the metrics window.
                                   Pass None for "all time" metrics.
+            repo (Optional[str]): Restrict metrics to a single repository
+                                  ("owner/name"). Defaults to the main repo so
+                                  existing dashboard pages stay jsPsych-only.
+                                  Pass None to include all repositories.
         """
         self.db = DatabaseManager(db_path)
         self.days = days
+        self.repo = repo
         self.end_date = datetime.now(timezone.utc)
         
         if self.days is not None:
@@ -57,13 +63,21 @@ class MetricsCalculator:
         else:
             self.start_date = None # For "all time" calculations
 
-    def _get_data_as_df(self, table_name: str, date_column: str = 'created_at') -> pd.DataFrame:
+    def _get_data_as_df(self, table_name: str, date_column: str = 'created_at',
+                         ignore_time_filter: bool = False) -> pd.DataFrame:
         """
         Fetch data from a table within the time window and return as a pandas DataFrame.
-        
+
         Args:
             table_name (str): The name of the database table.
             date_column (str): The name of the date column to filter on.
+            ignore_time_filter (bool): If True, skip the self.days/start_date
+                                       window and return all-time data (still
+                                       subject to the repo and bot filters).
+                                       Used by metrics that need full history
+                                       regardless of the calculator's window,
+                                       e.g. determining a contributor's
+                                       first-ever contribution.
 
         Returns:
             pd.DataFrame: A DataFrame containing the filtered data.
@@ -74,6 +88,13 @@ class MetricsCalculator:
         
         if df.empty:
             return pd.DataFrame()
+
+        # Restrict to a single repository (unless repo is None = all repos).
+        # Applied before the bot/time filters so downstream logic is unchanged.
+        if self.repo is not None and 'repo' in df.columns:
+            df = df[df['repo'] == self.repo].copy()
+            if df.empty:
+                return pd.DataFrame()
 
         # Centrally drop bot-authored rows. The author column varies by table;
         # tables not in _AUTHOR_COLUMNS (e.g. releases) are left unfiltered.
@@ -91,10 +112,10 @@ class MetricsCalculator:
             if df.empty:
                 return pd.DataFrame()
 
-        if self.start_date and date_column in df.columns:
+        if self.start_date and date_column in df.columns and not ignore_time_filter:
             df[date_column] = pd.to_datetime(df[date_column], utc=True)
             return df[df[date_column] >= self.start_date].copy()
-        
+
         return df
 
     # overview metrics
@@ -502,5 +523,175 @@ class MetricsCalculator:
         open_issues = issues_df[issues_df['state'] == 'open']
         return open_issues['issue_type'].value_counts().reset_index().rename(columns={'index': 'type', 'type': 'count'})
 
+    # community / contribution metrics (Goal 4: rate of contribution to
+    # community repositories)
+    # -- helpers --
+
+    def _first_contribution_dates(self) -> pd.Series:
+        """
+        Get each contributor's first-ever contribution timestamp.
+
+        Considers PRs, issues, comments, and reviews, and looks across the
+        full history of the repo (ignoring self.days) so that a narrow time
+        window doesn't make every active contributor look "new".
+
+        Returns:
+            pd.Series: Series indexed by login, with the earliest
+                       contribution timestamp (UTC) as the value. Empty if
+                       there is no data.
+        """
+        prs_df = self._get_data_as_df('pull_requests', 'created_at', ignore_time_filter=True)
+        issues_df = self._get_data_as_df('issues', 'created_at', ignore_time_filter=True)
+        comments_df = self._get_data_as_df('comments', 'created_at', ignore_time_filter=True)
+        reviews_df = self._get_data_as_df('reviews', 'submitted_at', ignore_time_filter=True)
+
+        frames = []
+        if not prs_df.empty:
+            frames.append(prs_df[['user_login', 'created_at']].rename(
+                columns={'user_login': 'login', 'created_at': 'timestamp'}))
+        if not issues_df.empty:
+            frames.append(issues_df[['user_login', 'created_at']].rename(
+                columns={'user_login': 'login', 'created_at': 'timestamp'}))
+        if not comments_df.empty:
+            frames.append(comments_df[['user_login', 'created_at']].rename(
+                columns={'user_login': 'login', 'created_at': 'timestamp'}))
+        if not reviews_df.empty:
+            frames.append(reviews_df[['reviewer_login', 'submitted_at']].rename(
+                columns={'reviewer_login': 'login', 'submitted_at': 'timestamp'}))
+
+        if not frames:
+            return pd.Series(dtype='datetime64[ns, UTC]')
+
+        all_activity = pd.concat(frames, ignore_index=True)
+        all_activity['timestamp'] = pd.to_datetime(all_activity['timestamp'], utc=True)
+        return all_activity.groupby('login')['timestamp'].min()
+
+    # -- valueboxes / charts --
+
+    def get_contribution_rate(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the count of merged pull requests and opened issues per period.
+
+        This is the Goal 4 sustainability metric: the rate of contribution
+        to community repositories over time.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'merged_prs', 'opened_issues'].
+        """
+        prs_df = self._get_data_as_df('pull_requests', 'created_at')
+        issues_df = self._get_data_as_df('issues', 'created_at')
+
+        merged = pd.DataFrame()
+        if not prs_df.empty and 'merged_at' in prs_df.columns and 'state' in prs_df.columns:
+            merged = prs_df[prs_df['state'] == 'merged'].copy()
+
+        if not merged.empty:
+            merged['merged_at'] = pd.to_datetime(merged['merged_at'], utc=True)
+            merged_counts = (
+                merged.groupby(pd.Grouper(key='merged_at', freq=freq))
+                .size()
+                .reset_index(name='merged_prs')
+                .rename(columns={'merged_at': 'period'})
+            )
+        else:
+            merged_counts = pd.DataFrame(columns=['period', 'merged_prs'])
+
+        if not issues_df.empty:
+            issues_df = issues_df.copy()
+            issues_df['created_at'] = pd.to_datetime(issues_df['created_at'], utc=True)
+            opened_counts = (
+                issues_df.groupby(pd.Grouper(key='created_at', freq=freq))
+                .size()
+                .reset_index(name='opened_issues')
+                .rename(columns={'created_at': 'period'})
+            )
+        else:
+            opened_counts = pd.DataFrame(columns=['period', 'opened_issues'])
+
+        if merged_counts.empty and opened_counts.empty:
+            return pd.DataFrame(columns=['period', 'merged_prs', 'opened_issues'])
+
+        result = pd.merge(merged_counts, opened_counts, on='period', how='outer').fillna(0)
+        result = result.sort_values('period').reset_index(drop=True)
+        result['merged_prs'] = result['merged_prs'].astype(int)
+        result['opened_issues'] = result['opened_issues'].astype(int)
+        return result[['period', 'merged_prs', 'opened_issues']]
+
+    def get_new_contributors_timeline(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the count of new (first-time) contributors per period.
+
+        A contributor is "new" in the period containing their first-ever
+        contribution (PR, issue, comment, or review), computed over the
+        full history of the repo regardless of self.days.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'new_contributors'].
+        """
+        first_contribution = self._first_contribution_dates()
+        if first_contribution.empty:
+            return pd.DataFrame(columns=['period', 'new_contributors'])
+
+        df = first_contribution.reset_index(name='timestamp')
+        result = (
+            df.groupby(pd.Grouper(key='timestamp', freq=freq))
+            .size()
+            .reset_index(name='new_contributors')
+            .rename(columns={'timestamp': 'period'})
+        )
+        return result[['period', 'new_contributors']]
+
+    def get_contributor_summary(self) -> dict:
+        """
+        Get a summary of contributor activity in the current time window.
+
+        Returns:
+            dict: A dictionary containing:
+                - total_contributors: Number of unique logins active in the window.
+                - new_contributors: Number of contributors whose first-ever
+                                    contribution falls inside the window (for
+                                    an all-time window this equals total_contributors).
+                - total_contributions: Total PRs + issues + comments + reviews in the window.
+        """
+        prs_df = self._get_data_as_df('pull_requests', 'created_at')
+        issues_df = self._get_data_as_df('issues', 'created_at')
+        comments_df = self._get_data_as_df('comments', 'created_at')
+        reviews_df = self._get_data_as_df('reviews', 'submitted_at')
+
+        window_logins = set()
+        if not prs_df.empty:
+            window_logins |= set(prs_df['user_login'].unique())
+        if not issues_df.empty:
+            window_logins |= set(issues_df['user_login'].unique())
+        if not comments_df.empty:
+            window_logins |= set(comments_df['user_login'].unique())
+        if not reviews_df.empty:
+            window_logins |= set(reviews_df['reviewer_login'].unique())
+
+        total_contributions = len(prs_df) + len(issues_df) + len(comments_df) + len(reviews_df)
+
+        if self.days is None:
+            # The window is all time, so every contributor is "new" within it.
+            new_contributors = len(window_logins)
+        else:
+            first_contribution = self._first_contribution_dates()
+            new_contributors = sum(
+                1 for login in window_logins
+                if login in first_contribution.index and first_contribution[login] >= self.start_date
+            )
+
+        return {
+            "total_contributors": len(window_logins),
+            "new_contributors": new_contributors,
+            "total_contributions": total_contributions
+        }
 
 

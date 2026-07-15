@@ -116,8 +116,8 @@ def _request_with_retries(client, url, headers, endpoint):
         return response
 
 
-def fetch_api(endpoint, github_token):
-    url = f"https://api.github.com/repos/jspsych/jsPsych/{endpoint}"
+def fetch_api(repo, endpoint, github_token):
+    url = f"https://api.github.com/repos/{repo}/{endpoint}"
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f'token {github_token}'

@@ -1,8 +1,12 @@
 import argparse
+import logging
 import subprocess
 import sys
 
 from .data_pipeline import GitHubDataPipeline
+from .repos import repo_names
+
+logger = logging.getLogger(__name__)
 
 
 def render_quarto(dashboard_dir: str) -> int:
@@ -17,15 +21,26 @@ def render_quarto(dashboard_dir: str) -> int:
         return e.returncode
 
 def run(mode: str, db_path: str, render: bool, dashboard_path: str) -> int:
-    pipeline = GitHubDataPipeline(db_path=db_path)
-
-    if mode == "full":
-        pipeline.sync_all_data()
-    elif mode == "incremental":
-        pipeline.sync_incremental()
-    else:
+    if mode not in ("full", "incremental"):
         print("Unsupported mode. Use 'full' or 'incremental'.")
         return 2
+
+    repos = repo_names()
+    failures = 0
+    for repo in repos:
+        logger.info(f"===== Syncing {repo} ({mode}) =====")
+        try:
+            pipeline = GitHubDataPipeline(repo=repo, db_path=db_path)
+            if mode == "full":
+                pipeline.sync_all_data()
+            else:
+                pipeline.sync_incremental()
+        except Exception:
+            failures += 1
+            logger.error(f"Failed to sync {repo}; continuing with remaining repos", exc_info=True)
+
+    if failures:
+        logger.error(f"{failures} of {len(repos)} repositories failed to sync")
 
     if render:
         return render_quarto(dashboard_path)

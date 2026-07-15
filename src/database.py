@@ -10,7 +10,11 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from . import repos
 from .models import DatabaseHelper, DatabaseSchema
+
+# Tables that carry a per-repo `repo` column and are subject to auto-migration.
+_REPO_TABLES = ('pull_requests', 'issues', 'reviews', 'comments', 'releases')
 
 
 class DatabaseManager:
@@ -36,7 +40,16 @@ class DatabaseManager:
             conn.close()
     
     def initialize_database(self):
-        """Create all tables and indexes if they don't exist"""
+        """Create all tables and indexes if they don't exist.
+
+        Runs an idempotent auto-migration first: any pre-existing table that
+        lacks the `repo` column is rebuilt into the repo-aware schema (existing
+        rows are attributed to the main repo). Fresh databases simply get the
+        new schema from the CREATE TABLE statements.
+        """
+        migrated = self._migrate_to_repo_schema()
+        if migrated:
+            self.logger.info(f"Migrated tables to repo-aware schema: {migrated}")
         with self.get_connection() as conn:
             tables = DatabaseSchema.get_create_table_statements()
             for table_name, create_stmt in tables.items():
@@ -48,6 +61,58 @@ class DatabaseManager:
             self._initialize_metadata(conn)
             conn.commit()
             self.logger.info("Database initialized successfully")
+
+    def _migrate_to_repo_schema(self) -> List[str]:
+        """Rebuild any legacy table missing the `repo` column, atomically.
+
+        For each affected table the migration, inside a single transaction:
+          1. creates a new-schema table,
+          2. copies every existing row across, stamping repo = main repo,
+          3. drops the old table and renames the new one into place.
+        Indexes (including the new per-repo indexes) are recreated afterwards by
+        initialize_database. Returns the list of tables that were migrated.
+        """
+        conn = sqlite3.connect(self.db_path)
+        conn.isolation_level = None  # manual transaction control
+        migrated: List[str] = []
+        try:
+            conn.execute("PRAGMA foreign_keys=OFF")
+            existing = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            create_stmts = DatabaseSchema.get_create_table_statements()
+            conn.execute("BEGIN")
+            for table in _REPO_TABLES:
+                if table not in existing:
+                    continue
+                cols = [row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+                if 'repo' in cols:
+                    continue  # already migrated
+                new_create = create_stmts[table].replace(
+                    f"IF NOT EXISTS {table}", f"{table}_new"
+                )
+                col_list = ", ".join(cols)
+                conn.execute(f"DROP TABLE IF EXISTS {table}_new")
+                conn.execute(new_create)
+                conn.execute(
+                    f"INSERT INTO {table}_new ({col_list}, repo) "
+                    f"SELECT {col_list}, ? FROM {table}",
+                    (repos.MAIN_REPO,),
+                )
+                conn.execute(f"DROP TABLE {table}")
+                conn.execute(f"ALTER TABLE {table}_new RENAME TO {table}")
+                migrated.append(table)
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            self.logger.error("Schema migration failed; rolled back", exc_info=True)
+            raise
+        finally:
+            conn.close()
+        return migrated
     
     def _initialize_metadata(self, conn: sqlite3.Connection):
         """Initialize metadata table with default values"""
@@ -83,14 +148,14 @@ class DatabaseManager:
                 now = datetime.utcnow().isoformat()
                 conn.execute('''
                     INSERT OR REPLACE INTO pull_requests (
-                        id, number, title, body, state, created_at, updated_at,
+                        id, repo, number, title, body, state, created_at, updated_at,
                         closed_at, merged_at, user_login, user_type, base_branch,
                         head_branch, additions, deletions, changed_files, commits_count,
                         labels, assignees, draft, mergeable, is_breaking_change,
                         pr_type, first_response_at, last_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    pr_data['id'], pr_data['number'], pr_data['title'], pr_data.get('body'),
+                    pr_data['id'], pr_data['repo'], pr_data['number'], pr_data['title'], pr_data.get('body'),
                     pr_data['state'], pr_data['created_at'], pr_data['updated_at'],
                     pr_data.get('closed_at'), pr_data.get('merged_at'),
                     pr_data['user_login'], pr_data.get('user_type'),
@@ -107,16 +172,22 @@ class DatabaseManager:
             self.logger.error(f"Error upserting PR {pr_data.get('number', 'unknown')}: {e}")
             return False
     
-    def get_pull_requests(self, state: Optional[str] = None, limit: Optional[int] = None) -> List[Dict]:
-        """Get pull requests with optional filtering"""
+    def get_pull_requests(self, repo: Optional[str] = None, state: Optional[str] = None,
+                          limit: Optional[int] = None) -> List[Dict]:
+        """Get pull requests with optional filtering by repo and/or state"""
         with self.get_connection() as conn:
             query = 'SELECT * FROM pull_requests'
             params = []
-            
+            conditions = []
+            if repo:
+                conditions.append('repo = ?')
+                params.append(repo)
             if state:
-                query += ' WHERE state = ?'
+                conditions.append('state = ?')
                 params.append(state)
-            
+            if conditions:
+                query += ' WHERE ' + ' AND '.join(conditions)
+
             query += ' ORDER BY created_at DESC'
             
             if limit:
@@ -162,13 +233,13 @@ class DatabaseManager:
                 
                 conn.execute('''
                     INSERT OR REPLACE INTO issues (
-                        id, number, title, body, state, created_at, updated_at,
+                        id, repo, number, title, body, state, created_at, updated_at,
                         closed_at, user_login, user_type, assignee_login, labels,
                         comments_count, issue_type, priority, first_response_at,
                         is_external_user, last_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    issue_data['id'], issue_data['number'], issue_data['title'],
+                    issue_data['id'], issue_data['repo'], issue_data['number'], issue_data['title'],
                     issue_data.get('body'), issue_data['state'],
                     issue_data['created_at'], issue_data['updated_at'],
                     issue_data.get('closed_at'), issue_data['user_login'],
@@ -185,16 +256,22 @@ class DatabaseManager:
             self.logger.error(f"Error upserting issue {issue_data.get('number', 'unknown')}: {e}")
             return False
     
-    def get_issues(self, state: Optional[str] = None, limit: Optional[int] = None) -> List[Dict]:
-        """Get issues with optional filtering"""
+    def get_issues(self, repo: Optional[str] = None, state: Optional[str] = None,
+                   limit: Optional[int] = None) -> List[Dict]:
+        """Get issues with optional filtering by repo and/or state"""
         with self.get_connection() as conn:
             query = 'SELECT * FROM issues'
             params = []
-            
+            conditions = []
+            if repo:
+                conditions.append('repo = ?')
+                params.append(repo)
             if state:
-                query += ' WHERE state = ?'
+                conditions.append('state = ?')
                 params.append(state)
-            
+            if conditions:
+                query += ' WHERE ' + ' AND '.join(conditions)
+
             query += ' ORDER BY created_at DESC'
             
             if limit:
@@ -229,10 +306,13 @@ class DatabaseManager:
             
             return summary
         
-    def get_pull_request_by_number(self, number: int) -> Optional[Dict[str, Any]]:
-        """Get a single pull request by its number."""
+    def get_pull_request_by_number(self, repo: str, number: int) -> Optional[Dict[str, Any]]:
+        """Get a single pull request by its repo and number."""
         with self.get_connection() as conn:
-            row = conn.execute('SELECT * FROM pull_requests WHERE number = ?', (number,)).fetchone()
+            row = conn.execute(
+                'SELECT * FROM pull_requests WHERE repo = ? AND number = ?',
+                (repo, number),
+            ).fetchone()
             if row:
                 pr = dict(row)
                 pr['labels'] = DatabaseHelper.deserialize_labels(pr['labels'])
@@ -248,11 +328,11 @@ class DatabaseManager:
                 
                 conn.execute('''
                     INSERT OR REPLACE INTO reviews (
-                        id, pr_number, reviewer_login, state, submitted_at,
+                        id, repo, pr_number, reviewer_login, state, submitted_at,
                         body, commit_sha, last_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    review_data['id'], review_data['pr_number'],
+                    review_data['id'], review_data['repo'], review_data['pr_number'],
                     review_data['reviewer_login'], review_data['state'],
                     review_data['submitted_at'], review_data.get('body'),
                     review_data.get('commit_sha'), now
@@ -272,11 +352,11 @@ class DatabaseManager:
                 now = datetime.utcnow().isoformat()
                 conn.execute('''
                     INSERT OR REPLACE INTO comments (
-                        id, issue_number, pr_number, user_login, body, created_at,
+                        id, repo, issue_number, pr_number, user_login, body, created_at,
                         updated_at, comment_type, last_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    comment_data['id'], comment_data.get('issue_number'),
+                    comment_data['id'], comment_data['repo'], comment_data.get('issue_number'),
                     comment_data.get('pr_number'), comment_data['user_login'],
                     comment_data.get('body'), comment_data['created_at'],
                     comment_data['updated_at'], comment_data['comment_type'], now
@@ -294,12 +374,12 @@ class DatabaseManager:
                 now = datetime.utcnow().isoformat()
                 conn.execute('''
                     INSERT OR REPLACE INTO releases (
-                        id, tag_name, name, body, created_at, published_at, draft,
+                        id, repo, tag_name, name, body, created_at, published_at, draft,
                         prerelease, author_login, tarball_url, zipball_url,
                         is_breaking, last_fetched_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
-                    release_data['id'], release_data['tag_name'], release_data.get('name'),
+                    release_data['id'], release_data['repo'], release_data['tag_name'], release_data.get('name'),
                     release_data.get('body'), release_data['created_at'],
                     release_data.get('published_at'), release_data.get('draft', False),
                     release_data.get('prerelease', False), release_data.get('author_login'),
@@ -328,15 +408,36 @@ class DatabaseManager:
             ''', (key, value, now))
             conn.commit()
     
-    def get_last_sync_time(self) -> Optional[str]:
+    def get_last_sync_time(self, repo: Optional[str] = None) -> Optional[str]:
+        """Return the most recent sync timestamp for display.
+
+        Sync metadata is stored per repo under keys like
+        `last_pr_sync:jspsych/jsPsych`. With no repo argument this returns the
+        most recent sync across all repos (keeping the dashboard's single
+        "Last Sync Time" display working); with a repo it scopes to that repo.
+        """
         with self.get_connection() as conn:
-            row = conn.execute('SELECT updated_at FROM metadata WHERE key = ?', ('last_pr_sync',)).fetchone()
-            return row['updated_at'] if row else None
-    
-    def update_last_sync_time(self, sync_type: str):
-        """Update last sync timestamp for a specific sync type"""
+            if repo:
+                row = conn.execute(
+                    "SELECT MAX(updated_at) AS ts FROM metadata "
+                    "WHERE key LIKE 'last_%_sync:' || ?",
+                    (repo,),
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    "SELECT MAX(updated_at) AS ts FROM metadata "
+                    "WHERE key LIKE 'last_%_sync%'"
+                ).fetchone()
+            return row['ts'] if row and row['ts'] else None
+
+    def get_sync_time_value(self, sync_type: str, repo: str) -> Optional[str]:
+        """Return the stored ISO timestamp value of a per-repo sync marker."""
+        return self.get_metadata(f'last_{sync_type}_sync:{repo}')
+
+    def update_last_sync_time(self, sync_type: str, repo: str):
+        """Update last sync timestamp for a specific sync type and repo"""
         now = datetime.utcnow().isoformat()
-        self.set_metadata(f'last_{sync_type}_sync', now)
+        self.set_metadata(f'last_{sync_type}_sync:{repo}', now)
     
     def get_activity_timeline(self, days: int = 90) -> List[Dict[str, Any]]:
         """Get combined PR and issue activity over time"""
