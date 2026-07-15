@@ -38,11 +38,14 @@ class MetricsCalculator:
     Attributes:
         db (DatabaseManager): An instance of the database manager.
         days (Optional[int]): The number of days to look back for metrics. If None, calculates for all time.
-        end_date (datetime): The end date for the time window (current time).
+        end_date (datetime): The end date for the time window. Defaults to the
+                             current time; can be set to an earlier date to
+                             "time-travel" and evaluate a historical window.
         start_date (Optional[datetime]): The start date for the time window.
     """
     def __init__(self, db_path: str = "../data/analytics.db", days: Optional[int] = 30,
-                 repo: Optional[str] = repos.MAIN_REPO):
+                 repo: Optional[str] = repos.MAIN_REPO,
+                 end_date: Optional[object] = None):
         """
         Initializes the MetricsCalculator.
 
@@ -54,16 +57,45 @@ class MetricsCalculator:
                                   ("owner/name"). Defaults to the main repo so
                                   existing dashboard pages stay jsPsych-only.
                                   Pass None to include all repositories.
+            end_date (Optional[datetime | str]): The upper bound of the time
+                                  window, as a datetime or ISO-8601 string.
+                                  Default None means "now" and preserves the
+                                  original behavior exactly (no upper-bound
+                                  filter, since nothing is dated in the
+                                  future). When provided it is coerced to a
+                                  timezone-aware UTC datetime, and
+                                  _get_data_as_df additionally filters rows to
+                                  date_column <= end_date, so metrics reflect
+                                  the state "as of" that date. Rolling
+                                  evaluation windows use this to step across
+                                  history.
         """
         self.db = DatabaseManager(db_path)
         self.days = days
         self.repo = repo
-        self.end_date = datetime.now(timezone.utc)
-        
+
+        # Track whether an explicit end_date was supplied. Only then do we
+        # apply an upper-bound date filter; with end_date=None nothing is in
+        # the future, so today's behavior (no upper bound) is preserved.
+        self._end_date_explicit = end_date is not None
+        if end_date is None:
+            self.end_date = datetime.now(timezone.utc)
+        else:
+            self.end_date = self._coerce_utc(end_date)
+
         if self.days is not None:
             self.start_date = self.end_date - timedelta(days=self.days)
         else:
             self.start_date = None # For "all time" calculations
+
+    @staticmethod
+    def _coerce_utc(value: object) -> datetime:
+        """Coerce a datetime or ISO-8601 string into a tz-aware UTC datetime."""
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
     def _get_data_as_df(self, table_name: str, date_column: str = 'created_at',
                          ignore_time_filter: bool = False) -> pd.DataFrame:
@@ -114,9 +146,28 @@ class MetricsCalculator:
             if df.empty:
                 return pd.DataFrame()
 
-        if self.start_date and date_column in df.columns and not ignore_time_filter:
+        # Lower bound: the rolling start_date, unless the caller asked for all
+        # history (ignore_time_filter) or this is an all-time calculator.
+        apply_lower = (
+            self.start_date is not None
+            and not ignore_time_filter
+        )
+        # Upper bound: only when an explicit end_date was supplied. This caps
+        # the calculator's view of the database at end_date, so even "all
+        # history" (ignore_time_filter) queries see the database as of that
+        # date -- e.g. a discussion's first response after end_date is not
+        # counted. With end_date=None this branch never runs, so today's
+        # behavior is unchanged.
+        apply_upper = self._end_date_explicit
+
+        if (apply_lower or apply_upper) and date_column in df.columns:
+            df = df.copy()
             df[date_column] = pd.to_datetime(df[date_column], utc=True)
-            return df[df[date_column] >= self.start_date].copy()
+            if apply_lower:
+                df = df[df[date_column] >= self.start_date]
+            if apply_upper:
+                df = df[df[date_column] <= self.end_date]
+            return df.copy()
 
         return df
 
@@ -142,6 +193,12 @@ class MetricsCalculator:
     def get_active_items(self) -> Dict[str, int]:
         """
         Get the count of active pull requests and issues.
+
+        Caveat: this reflects the *current* stored state (rows whose state is
+        'open'), not the state as of the window. Setting end_date does not make
+        this time-travel -- an item open today is counted even for a historical
+        end_date, and one created after end_date is still excluded by the
+        upper-bound date filter. Treat this as a "current backlog" metric.
 
         Returns:
             Dict[str, int]: A dictionary with counts of open PRs, open issues, and total active items.
@@ -728,6 +785,13 @@ class MetricsCalculator:
     def open_issues_aging(self) -> pd.DataFrame:
         """
         Get the aging distribution of open issues.
+
+        Caveat: "open" is the issue's *current* stored state, so this cannot
+        truly time-travel. With an explicit end_date the age is measured
+        against end_date and issues created after end_date are dropped, but an
+        issue that is open today is treated as open for the whole window even
+        if it was actually closed later than end_date. Treat this as a
+        current-state metric evaluated as of end_date.
 
         Returns:
             pd.DataFrame: A DataFrame with open issues aging data.
