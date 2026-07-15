@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from .config import Config
 from .database import DatabaseManager
 from .github_client import fetch_api
+from .graphql_client import fetch_discussions
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -227,6 +228,101 @@ class GitHubDataPipeline:
         logger.info(f"[{self.repo}] Stored {stored_count} releases.")
         return stored_count
 
+    def fetch_and_store_discussions(self) -> int:
+        """Fetch GitHub Discussions via GraphQL and store them plus their
+        comments and replies.
+
+        Discussions and their comment threads are fetched through the GraphQL
+        API (the REST API cannot see them). Each discussion is flattened into
+        the `discussions` table; every top-level comment and every reply is
+        flattened into `discussion_comments` (replies carry the parent comment's
+        databaseId in parent_comment_id and share the discussion_number).
+
+        A repo with discussions disabled (or zero discussions) stores nothing
+        and is not an error. On an unrecoverable fetch failure this returns 0
+        and does not update the sync marker.
+
+        Returns the number of discussions stored.
+        """
+        logger.info(f"[{self.repo}] Fetching discussions via GraphQL...")
+        discussions = fetch_discussions(self.repo, self.github_token)
+        if discussions is None:
+            logger.error(f"[{self.repo}] Failed to fetch discussions")
+            return 0
+
+        stored_count = 0
+        comment_count = 0
+        for disc in discussions:
+            comments = (disc.get('comments') or {}).get('nodes', [])
+            # comments_count = top-level comments + all their replies
+            total_comments = 0
+            for comment in comments:
+                total_comments += 1
+                total_comments += len((comment.get('replies') or {}).get('nodes', []))
+
+            answer = disc.get('answer') or {}
+            disc_record = {
+                'id': disc['databaseId'],
+                'repo': self.repo,
+                'number': disc['number'],
+                'title': disc['title'],
+                'body': disc.get('body'),
+                'category': (disc.get('category') or {}).get('name'),
+                'created_at': disc['createdAt'],
+                'updated_at': disc['updatedAt'],
+                'author_login': self._discussion_author(disc),
+                'is_answered': disc.get('isAnswered', False),
+                'answer_comment_id': answer.get('databaseId'),
+                'answer_created_at': answer.get('createdAt'),
+                'upvote_count': disc.get('upvoteCount'),
+                'comments_count': total_comments,
+            }
+            if self.db.upsert_discussion(disc_record):
+                stored_count += 1
+
+            number = disc['number']
+            for comment in comments:
+                comment_record = {
+                    'id': comment['databaseId'],
+                    'repo': self.repo,
+                    'discussion_number': number,
+                    'author_login': self._discussion_author(comment),
+                    'body': comment.get('body'),
+                    'created_at': comment['createdAt'],
+                    'is_answer': comment.get('isAnswer', False),
+                    'parent_comment_id': None,
+                }
+                if self.db.upsert_discussion_comment(comment_record):
+                    comment_count += 1
+                for reply in (comment.get('replies') or {}).get('nodes', []):
+                    reply_record = {
+                        'id': reply['databaseId'],
+                        'repo': self.repo,
+                        'discussion_number': number,
+                        'author_login': self._discussion_author(reply),
+                        'body': reply.get('body'),
+                        'created_at': reply['createdAt'],
+                        'is_answer': reply.get('isAnswer', False),
+                        'parent_comment_id': comment['databaseId'],
+                    }
+                    if self.db.upsert_discussion_comment(reply_record):
+                        comment_count += 1
+
+        self.db.update_last_sync_time('discussion', self.repo)
+        self.db.set_metadata(f'total_discussions_tracked:{self.repo}', str(stored_count))
+        logger.info(
+            f"[{self.repo}] Stored {stored_count} discussions and {comment_count} discussion comments"
+        )
+        return stored_count
+
+    @staticmethod
+    def _discussion_author(node: Dict[str, Any]) -> str:
+        """Return a node's author login, mapping deleted (null) authors to 'ghost'."""
+        author = node.get('author') if node else None
+        if author and author.get('login'):
+            return author['login']
+        return 'ghost'
+
     def _process_pull_request(self, pr: Dict[str, Any]) -> Dict[str, Any]:
         """Process raw PR data from GitHub API"""
         labels = [label['name'] for label in pr.get('labels', [])]
@@ -337,16 +433,18 @@ class GitHubDataPipeline:
         review_count = self.fetch_and_store_reviews_for_all_prs()
         comment_count = self.fetch_and_store_comments()
         release_count = self.fetch_and_store_releases()
+        discussion_count = self.fetch_and_store_discussions()
         add_count = self.fetch_add_del_data()
 
         self.db.update_last_sync_time('full', self.repo)
-        logger.info(f"[{self.repo}] Full sync completed: {pr_count} PRs, {issue_count} issues, {review_count} reviews, {release_count} releases, and {comment_count} comments stored.")
+        logger.info(f"[{self.repo}] Full sync completed: {pr_count} PRs, {issue_count} issues, {review_count} reviews, {release_count} releases, {comment_count} comments, and {discussion_count} discussions stored.")
         return {
             'pull_requests': pr_count,
             'issues': issue_count,
             'reviews': review_count,
             'comments': comment_count,
             'releases': release_count,
+            'discussions': discussion_count,
             'additions_deletions_fetched': add_count,
             'timestamp': datetime.utcnow().isoformat()
         }
@@ -373,13 +471,18 @@ class GitHubDataPipeline:
                     break
         issue_count = self.fetch_and_store_issues_since(last_inc)
         add_del_count = self.fetch_add_del_for_prs(updated_pr_numbers)
+        # Discussions GraphQL has no reliable `since` filter, so incremental
+        # mode performs a full refetch of discussions like full sync does.
+        discussion_count = self.fetch_and_store_discussions()
         self.db.update_last_sync_time('incremental', self.repo)
         logger.info(
-            f"[{self.repo}] Incremental sync completed: {pr_count} PRs, {issue_count} issues, {add_del_count} PR stats."
+            f"[{self.repo}] Incremental sync completed: {pr_count} PRs, {issue_count} issues, "
+            f"{add_del_count} PR stats, {discussion_count} discussions (full refetch)."
         )
         return {
             'pull_requests': pr_count,
             'issues': issue_count,
             'additions_deletions_updated': add_del_count,
+            'discussions': discussion_count,
             'timestamp': datetime.utcnow().isoformat()
         }

@@ -123,6 +123,41 @@ class DatabaseSchema:
                 )
             ''',
 
+            'discussions': '''
+                CREATE TABLE IF NOT EXISTS discussions (
+                    id INTEGER PRIMARY KEY, -- GitHub databaseId
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    number INTEGER NOT NULL, -- discussion number
+                    title TEXT NOT NULL,
+                    body TEXT,
+                    category TEXT, -- discussion category name (e.g. 'Q&A')
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    author_login TEXT NOT NULL, -- 'ghost' if author deleted
+                    is_answered BOOLEAN DEFAULT FALSE,
+                    answer_comment_id INTEGER, -- databaseId of the accepted answer comment
+                    answer_created_at TEXT, -- when the answer was posted
+                    upvote_count INTEGER,
+                    comments_count INTEGER, -- top-level comments + replies stored
+                    last_fetched_at TEXT NOT NULL,
+                    UNIQUE(repo, number)
+                )
+            ''',
+
+            'discussion_comments': '''
+                CREATE TABLE IF NOT EXISTS discussion_comments (
+                    id INTEGER PRIMARY KEY, -- GitHub databaseId
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    discussion_number INTEGER NOT NULL,
+                    author_login TEXT NOT NULL, -- 'ghost' if author deleted
+                    body TEXT,
+                    created_at TEXT NOT NULL,
+                    is_answer BOOLEAN DEFAULT FALSE,
+                    parent_comment_id INTEGER, -- NULL for top-level, set for replies
+                    last_fetched_at TEXT NOT NULL
+                )
+            ''',
+
             'metadata': '''
                 CREATE TABLE IF NOT EXISTS metadata (
                     key TEXT PRIMARY KEY,
@@ -166,7 +201,17 @@ class DatabaseSchema:
             'CREATE INDEX IF NOT EXISTS idx_comment_created_at ON comments (created_at)',
             
             'CREATE INDEX IF NOT EXISTS idx_release_published_at ON releases (published_at)',
-            'CREATE INDEX IF NOT EXISTS idx_release_created_at ON releases (created_at)'
+            'CREATE INDEX IF NOT EXISTS idx_release_created_at ON releases (created_at)',
+
+            'CREATE INDEX IF NOT EXISTS idx_discussion_repo ON discussions (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_created_at ON discussions (created_at)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_author ON discussions (author_login)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_category ON discussions (category)',
+
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_repo ON discussion_comments (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_created_at ON discussion_comments (created_at)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_author ON discussion_comments (author_login)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_number ON discussion_comments (discussion_number)'
         ]
         
         return indexes

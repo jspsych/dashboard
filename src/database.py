@@ -392,6 +392,68 @@ class DatabaseManager:
             self.logger.error(f"Error upserting release {release_data.get('tag_name', 'unknown')}: {e}")
             return False
 
+    def upsert_discussion(self, data: Dict[str, Any]) -> bool:
+        """Insert or update a discussion record"""
+        try:
+            with self.get_connection() as conn:
+                now = datetime.utcnow().isoformat()
+                conn.execute('''
+                    INSERT OR REPLACE INTO discussions (
+                        id, repo, number, title, body, category, created_at,
+                        updated_at, author_login, is_answered, answer_comment_id,
+                        answer_created_at, upvote_count, comments_count, last_fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    data['id'], data['repo'], data['number'], data['title'],
+                    data.get('body'), data.get('category'), data['created_at'],
+                    data['updated_at'], data['author_login'],
+                    data.get('is_answered', False), data.get('answer_comment_id'),
+                    data.get('answer_created_at'), data.get('upvote_count'),
+                    data.get('comments_count'), now
+                ))
+                conn.commit()
+                return True
+        except Exception as e:
+            self.logger.error(f"Error upserting discussion {data.get('number', 'unknown')}: {e}")
+            return False
+
+    def upsert_discussion_comment(self, data: Dict[str, Any]) -> bool:
+        """Insert or update a discussion comment (or reply) record"""
+        try:
+            with self.get_connection() as conn:
+                now = datetime.utcnow().isoformat()
+                conn.execute('''
+                    INSERT OR REPLACE INTO discussion_comments (
+                        id, repo, discussion_number, author_login, body,
+                        created_at, is_answer, parent_comment_id, last_fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    data['id'], data['repo'], data['discussion_number'],
+                    data['author_login'], data.get('body'), data['created_at'],
+                    data.get('is_answer', False), data.get('parent_comment_id'), now
+                ))
+                conn.commit()
+                return True
+        except Exception as e:
+            self.logger.error(f"Error upserting discussion comment {data.get('id', 'unknown')}: {e}")
+            return False
+
+    def get_discussions(self, repo: Optional[str] = None,
+                        limit: Optional[int] = None) -> List[Dict]:
+        """Get discussions with optional filtering by repo"""
+        with self.get_connection() as conn:
+            query = 'SELECT * FROM discussions'
+            params: List[Any] = []
+            if repo:
+                query += ' WHERE repo = ?'
+                params.append(repo)
+            query += ' ORDER BY created_at DESC'
+            if limit:
+                query += ' LIMIT ?'
+                params.append(limit)
+            rows = conn.execute(query, params).fetchall()
+            return [dict(row) for row in rows]
+
     def get_metadata(self, key: str) -> Optional[str]:
         """Get metadata value by key"""
         with self.get_connection() as conn:
