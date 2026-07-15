@@ -120,6 +120,23 @@ class MetricsCalculator:
 
         return df
 
+    def _author_group(self, series: pd.Series) -> pd.Series:
+        """
+        Label each login as 'core' or 'community' based on merge access.
+
+        A login is 'core' if it is a current core-team member (per
+        team.core_team_logins()), otherwise 'community'. Used to split
+        author-oriented PR metrics by contributor group for Goal 2.
+
+        Args:
+            series (pd.Series): A Series of author logins.
+
+        Returns:
+            pd.Series: A Series of 'core'/'community' labels aligned to series.
+        """
+        core_logins = team.core_team_logins()
+        return series.apply(lambda login: 'core' if login in core_logins else 'community')
+
     # overview metrics
     # -- valueboxes --
     def get_active_items(self) -> Dict[str, int]:
@@ -387,6 +404,118 @@ class MetricsCalculator:
             "total_prs": len(prs_df)
         }
     
+    def get_median_pr_merge_time_by_group(self) -> Dict[str, float]:
+        """
+        Get the median PR merge time split by author group (Goal 2).
+
+        Merged PRs in the current time window are split by whether their
+        author is a core-team member ('core') or not ('community'). This
+        isolates how long *community* contributions wait to merge from
+        core-team self-merges.
+
+        Returns:
+            Dict[str, float]: {'core': median_days, 'community': median_days}.
+                              A group with no merged PRs maps to 0.0.
+        """
+        result = {'core': 0.0, 'community': 0.0}
+        prs_df = self._get_data_as_df('pull_requests', 'created_at')
+        if prs_df.empty or 'merged_at' not in prs_df.columns:
+            return result
+        merged = prs_df[prs_df['state'] == 'merged'].copy()
+        if merged.empty:
+            return result
+        merged['created_at'] = pd.to_datetime(merged['created_at'], utc=True)
+        merged['merged_at'] = pd.to_datetime(merged['merged_at'], utc=True)
+        merged['merge_time'] = (merged['merged_at'] - merged['created_at']).dt.total_seconds() / 86400
+        merged['group'] = self._author_group(merged['user_login'])
+        for group, sub in merged.groupby('group'):
+            result[group] = float(sub['merge_time'].median())
+        return result
+
+    def get_med_time_to_first_response_prs_by_group(self) -> Dict[str, float]:
+        """
+        Get the median time to first response on PRs split by author group (Goal 2).
+
+        Uses the same per-PR first-response logic as
+        get_med_time_to_first_response_prs (first comment or review on the
+        PR, with bot authors excluded via the central filter), but groups the
+        resulting per-PR response times by the PR *author's* group. The
+        question this answers is "how fast do community authors get a first
+        response versus core-team authors?".
+
+        Returns:
+            Dict[str, float]: {'core': median_days, 'community': median_days}.
+                              A group with no responded PRs maps to 0.0.
+        """
+        result = {'core': 0.0, 'community': 0.0}
+        prs_df = self._get_data_as_df('pull_requests', 'created_at')
+        comments_df = self._get_data_as_df('comments', 'created_at')
+        reviews_df = self._get_data_as_df('reviews', 'submitted_at')
+        if prs_df.empty:
+            return result
+
+        core_logins = team.core_team_logins()
+        times = {'core': [], 'community': []}
+
+        for _, pr in prs_df.iterrows():
+            pr_created = pd.to_datetime(pr['created_at'], utc=True)
+            pr_number = pr['number']
+
+            first_comment_time = None
+            if not comments_df.empty:
+                pr_comments = comments_df[comments_df['pr_number'] == pr_number]
+                if not pr_comments.empty:
+                    first_comment_time = pd.to_datetime(pr_comments['created_at'].min(), utc=True)
+
+            first_review_time = None
+            if not reviews_df.empty:
+                pr_reviews = reviews_df[reviews_df['pr_number'] == pr_number]
+                if not pr_reviews.empty:
+                    first_review_time = pd.to_datetime(pr_reviews['submitted_at'].min(), utc=True)
+
+            firsts = [t for t in [first_comment_time, first_review_time] if t is not None]
+            if firsts:
+                delta_days = (min(firsts) - pr_created).total_seconds() / 86400
+                group = 'core' if pr['user_login'] in core_logins else 'community'
+                times[group].append(delta_days)
+
+        for group, values in times.items():
+            if values:
+                result[group] = float(np.median(values))
+        return result
+
+    def get_pr_merge_rate_by_group(self) -> dict:
+        """
+        Get the PR merge rate split by author group (Goal 2).
+
+        PRs in the current time window are split by whether their author is a
+        core-team member ('core') or not ('community'), so community merge
+        acceptance can be tracked separately from core-team self-merges.
+
+        Returns:
+            dict: {'core': {merge_rate, total_merged, total_prs},
+                   'community': {merge_rate, total_merged, total_prs}}.
+                  A group with no PRs keeps the zeroed default.
+        """
+        result = {
+            'core': {"merge_rate": 0.0, "total_merged": 0, "total_prs": 0},
+            'community': {"merge_rate": 0.0, "total_merged": 0, "total_prs": 0},
+        }
+        prs_df = self._get_data_as_df('pull_requests', 'created_at')
+        if prs_df.empty:
+            return result
+        prs_df = prs_df.copy()
+        prs_df['group'] = self._author_group(prs_df['user_login'])
+        for group, sub in prs_df.groupby('group'):
+            merged = sub[sub['state'] == 'merged']
+            total_prs = len(sub)
+            result[group] = {
+                "merge_rate": 100.0 * len(merged) / total_prs if total_prs > 0 else 0.0,
+                "total_merged": len(merged),
+                "total_prs": total_prs,
+            }
+        return result
+
     def backlog_trend_prs(self) -> int:
         """
         Get the open pull requests count.
@@ -428,7 +557,107 @@ class MetricsCalculator:
             return pd.DataFrame(columns=['size'])
         prs_df['size'] = prs_df['additions'] + prs_df['deletions']
         return prs_df[['size']]
-   
+
+    def get_pr_merge_time_trend(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the median PR merge time per period, split by author group (Goal 2 trend).
+
+        Trends span the full history of the repo regardless of self.days, so
+        six-month evaluations can ask "is this improving?". Merged PRs are
+        bucketed by their merged_at date and the median merge time (in days)
+        is computed for core authors, community authors, and all authors.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'core',
+                          'community', 'all']. Periods with no merged PRs are
+                          omitted; within a kept period a group with no merged
+                          PRs has a NaN value for that column.
+        """
+        columns = ['period', 'core', 'community', 'all']
+        prs_df = self._get_data_as_df('pull_requests', 'created_at', ignore_time_filter=True)
+        if prs_df.empty or 'merged_at' not in prs_df.columns:
+            return pd.DataFrame(columns=columns)
+        merged = prs_df[prs_df['state'] == 'merged'].copy()
+        if merged.empty:
+            return pd.DataFrame(columns=columns)
+        merged['created_at'] = pd.to_datetime(merged['created_at'], utc=True)
+        merged['merged_at'] = pd.to_datetime(merged['merged_at'], utc=True)
+        merged['merge_time'] = (merged['merged_at'] - merged['created_at']).dt.total_seconds() / 86400
+        merged['group'] = self._author_group(merged['user_login'])
+
+        grouper = pd.Grouper(key='merged_at', freq=freq)
+        all_med = merged.groupby(grouper)['merge_time'].median()
+        core_med = merged[merged['group'] == 'core'].groupby(grouper)['merge_time'].median()
+        community_med = merged[merged['group'] == 'community'].groupby(grouper)['merge_time'].median()
+
+        result = pd.DataFrame({'core': core_med, 'community': community_med, 'all': all_med})
+        result = result.dropna(subset=['all'])
+        result = result.reset_index().rename(columns={'merged_at': 'period'})
+        return result[columns]
+
+    def get_pr_first_response_trend(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the median time to first response for PRs created per period (Goal 2 trend).
+
+        Trends span the full history of the repo regardless of self.days. Each
+        PR is bucketed by its created_at date and mapped to its time-to-first
+        response (first comment or review, bots excluded via the central
+        filter, identical semantics to get_med_time_to_first_response_prs);
+        the median is taken per period. All authors are included.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'median_days'].
+        """
+        columns = ['period', 'median_days']
+        prs_df = self._get_data_as_df('pull_requests', 'created_at', ignore_time_filter=True)
+        if prs_df.empty:
+            return pd.DataFrame(columns=columns)
+        comments_df = self._get_data_as_df('comments', 'created_at', ignore_time_filter=True)
+        reviews_df = self._get_data_as_df('reviews', 'submitted_at', ignore_time_filter=True)
+
+        records = []
+        for _, pr in prs_df.iterrows():
+            pr_created = pd.to_datetime(pr['created_at'], utc=True)
+            pr_number = pr['number']
+
+            first_comment_time = None
+            if not comments_df.empty:
+                pr_comments = comments_df[comments_df['pr_number'] == pr_number]
+                if not pr_comments.empty:
+                    first_comment_time = pd.to_datetime(pr_comments['created_at'].min(), utc=True)
+
+            first_review_time = None
+            if not reviews_df.empty:
+                pr_reviews = reviews_df[reviews_df['pr_number'] == pr_number]
+                if not pr_reviews.empty:
+                    first_review_time = pd.to_datetime(pr_reviews['submitted_at'].min(), utc=True)
+
+            firsts = [t for t in [first_comment_time, first_review_time] if t is not None]
+            if firsts:
+                delta_days = (min(firsts) - pr_created).total_seconds() / 86400
+                records.append({'created_at': pr_created, 'response_days': delta_days})
+
+        if not records:
+            return pd.DataFrame(columns=columns)
+
+        df = pd.DataFrame(records)
+        result = (
+            df.groupby(pd.Grouper(key='created_at', freq=freq))['response_days']
+            .median()
+            .reset_index(name='median_days')
+            .rename(columns={'created_at': 'period'})
+        )
+        result = result.dropna(subset=['median_days'])
+        return result[columns]
+
     # issue metrics
     # -- valueboxes --
     def get_median_issue_close_time(self) -> float:
@@ -651,6 +880,41 @@ class MetricsCalculator:
         )
         return result[['period', 'new_contributors']]
 
+    def get_cumulative_contributors(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the cumulative count of distinct contributors over time (Goal 5).
+
+        Built on _first_contribution_dates(), which spans the full history of
+        the repo regardless of self.days. Each contributor is counted in the
+        period of their first-ever contribution; the running total shows how
+        the contributor base has grown, so evaluations can ask whether
+        new-contributor growth is accelerating.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period',
+                          'new_contributors', 'cumulative_contributors']. The
+                          final cumulative value equals the repo's total number
+                          of distinct contributors.
+        """
+        columns = ['period', 'new_contributors', 'cumulative_contributors']
+        first_contribution = self._first_contribution_dates()
+        if first_contribution.empty:
+            return pd.DataFrame(columns=columns)
+
+        df = first_contribution.reset_index(name='timestamp')
+        result = (
+            df.groupby(pd.Grouper(key='timestamp', freq=freq))
+            .size()
+            .reset_index(name='new_contributors')
+            .rename(columns={'timestamp': 'period'})
+        )
+        result['cumulative_contributors'] = result['new_contributors'].cumsum()
+        return result[columns]
+
     def get_contributor_summary(self) -> dict:
         """
         Get a summary of contributor activity in the current time window.
@@ -700,6 +964,62 @@ class MetricsCalculator:
     # responses; broaden participation in the support forum)
     # -- valueboxes --
 
+    def _discussion_first_response_times(self, ignore_time_filter: bool = False) -> pd.DataFrame:
+        """
+        Get, per discussion, the time to its first non-author response.
+
+        A "response" is any top-level comment or reply authored by someone
+        other than the discussion's own author (self-replies don't count as
+        support). Discussions are restricted to the current time window
+        (unless ignore_time_filter is True, used by trend series that need
+        full history), but their comments are always looked up across all
+        time, since a discussion opened inside the window may not be answered
+        until after it. Bot authors are excluded via the central bot filter on
+        both tables. Discussions with no qualifying response are omitted.
+
+        Args:
+            ignore_time_filter (bool): If True, include discussions from all
+                                       history rather than only the current
+                                       self.days window.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['created_at',
+                          'response_days'] — the discussion's creation
+                          timestamp (UTC) and the days to its first response.
+                          Empty (with those columns) if there is no data.
+        """
+        columns = ['created_at', 'response_days']
+        discussions_df = self._get_data_as_df(
+            'discussions', 'created_at', ignore_time_filter=ignore_time_filter)
+        if discussions_df.empty:
+            return pd.DataFrame(columns=columns)
+
+        comments_df = self._get_data_as_df(
+            'discussion_comments', 'created_at', ignore_time_filter=True)
+        if comments_df.empty:
+            return pd.DataFrame(columns=columns)
+        comments_df = comments_df.copy()
+        comments_df['created_at'] = pd.to_datetime(comments_df['created_at'], utc=True)
+
+        records = []
+        for _, discussion in discussions_df.iterrows():
+            created = pd.to_datetime(discussion['created_at'], utc=True)
+            thread_comments = comments_df[
+                (comments_df['discussion_number'] == discussion['number']) &
+                (comments_df['author_login'] != discussion['author_login'])
+            ]
+            if thread_comments.empty:
+                continue
+            first_response = thread_comments['created_at'].min()
+            records.append({
+                'created_at': created,
+                'response_days': (first_response - created).total_seconds() / 86400,
+            })
+
+        if not records:
+            return pd.DataFrame(columns=columns)
+        return pd.DataFrame(records)
+
     def get_med_time_to_first_discussion_response(self) -> float:
         """
         Get the median time to the first response on a discussion.
@@ -716,30 +1036,10 @@ class MetricsCalculator:
             float: The median time to first response in days, or 0.0 if
                    there is no data.
         """
-        discussions_df = self._get_data_as_df('discussions', 'created_at')
-        if discussions_df.empty:
+        times = self._discussion_first_response_times()
+        if times.empty:
             return 0.0
-
-        comments_df = self._get_data_as_df(
-            'discussion_comments', 'created_at', ignore_time_filter=True)
-        if comments_df.empty:
-            return 0.0
-        comments_df = comments_df.copy()
-        comments_df['created_at'] = pd.to_datetime(comments_df['created_at'], utc=True)
-
-        times = []
-        for _, discussion in discussions_df.iterrows():
-            created = pd.to_datetime(discussion['created_at'], utc=True)
-            thread_comments = comments_df[
-                (comments_df['discussion_number'] == discussion['number']) &
-                (comments_df['author_login'] != discussion['author_login'])
-            ]
-            if thread_comments.empty:
-                continue
-            first_response = thread_comments['created_at'].min()
-            times.append((first_response - created).total_seconds() / 86400)
-
-        return float(np.median(times)) if times else 0.0
+        return float(times['response_days'].median())
 
     def get_med_time_to_answer(self) -> float:
         """
@@ -915,5 +1215,36 @@ class MetricsCalculator:
             "community_pct": 100.0 * community_count / total_responses,
             "total_responses": total_responses,
         }
+
+    def get_discussion_response_trend(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the median time to first discussion response per period (Goal 3 trend).
+
+        Trends span the full history of the repo regardless of self.days.
+        Discussions are bucketed by their creation date and mapped to their
+        time to first non-author response (reusing the pairing logic of
+        get_med_time_to_first_discussion_response); the median is taken per
+        period. Discussions with no qualifying response are excluded.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period', 'median_days'].
+        """
+        columns = ['period', 'median_days']
+        times = self._discussion_first_response_times(ignore_time_filter=True)
+        if times.empty:
+            return pd.DataFrame(columns=columns)
+
+        result = (
+            times.groupby(pd.Grouper(key='created_at', freq=freq))['response_days']
+            .median()
+            .reset_index(name='median_days')
+            .rename(columns={'created_at': 'period'})
+        )
+        result = result.dropna(subset=['median_days'])
+        return result[columns]
 
 
