@@ -12,3 +12,4 @@ typing
 httpx
 seaborn
 ruff
+pytest
