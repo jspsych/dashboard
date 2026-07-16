@@ -19,7 +19,8 @@ Run everything from the repo root:
 - Incremental sync: `python -m src.cli incremental` — status uncertain; CI only ever runs `full`, so don't assume incremental works without testing it
 - Render dashboard: `quarto render dashboard`
 - Lint: `ruff check .` (config in `ruff.toml`)
-- Preferred local verification: render the dashboard and check the output pages (there are no tests)
+- Tests: `python3 -m pytest tests/ -q` (deterministic, no network; CI runs them on push/PR)
+- For dashboard-page changes, also render locally and check the output pages: `source .venv/bin/activate && quarto render dashboard`
 
 ## Gotchas
 
