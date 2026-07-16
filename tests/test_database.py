@@ -7,7 +7,7 @@ no-repo-column -> repo-aware auto-migration.
 import sqlite3
 from datetime import datetime, timezone
 
-from conftest import MAIN, _pr
+from conftest import CONTRIB, MAIN, _commit, _pr
 
 from src import repos
 from src.database import DatabaseManager
@@ -15,7 +15,7 @@ from src.models import DatabaseSchema
 
 EXPECTED_TABLES = {
     "pull_requests", "issues", "reviews", "comments", "releases",
-    "discussions", "discussion_comments", "metadata",
+    "discussions", "discussion_comments", "commits", "metadata",
 }
 
 
@@ -107,6 +107,91 @@ def test_get_activity_timeline_counts_recent_rows(tmp_path):
     rows = db.get_activity_timeline(3650)
     types = {r["type"] for r in rows}
     assert types == {"PR", "Issue"}
+
+
+# --- commits ---------------------------------------------------------------
+
+def _commit_rows(path, repo=None):
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    try:
+        if repo:
+            rows = conn.execute("SELECT * FROM commits WHERE repo = ?", (repo,)).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM commits").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def test_commits_table_created(tmp_path):
+    path = tmp_path / "fresh.db"
+    DatabaseManager(str(path))
+    assert "commits" in _table_names(path)
+    cols = _columns(path, "commits")
+    for col in ("repo", "sha", "author_login", "author_name", "author_email",
+                "authored_at", "committed_at", "message_headline",
+                "is_merge_commit", "last_fetched_at"):
+        assert col in cols
+
+
+def test_upsert_commit_idempotent_by_repo_sha(tmp_path):
+    db = DatabaseManager(str(tmp_path / "c.db"))
+    db.upsert_commit(_commit(MAIN, "abc", "coredev", "2024-01-01T00:00:00"))
+    db.upsert_commit(_commit(MAIN, "abc", "coredev", "2024-01-01T00:00:00"))
+    assert len(_commit_rows(tmp_path / "c.db", MAIN)) == 1
+
+
+def test_upsert_commit_replace_on_repo_sha_collision(tmp_path):
+    # Same (repo, sha) with a changed field REPLACES rather than duplicating.
+    db = DatabaseManager(str(tmp_path / "c.db"))
+    db.upsert_commit(_commit(MAIN, "abc", "coredev", "2024-01-01T00:00:00"))
+    db.upsert_commit(_commit(MAIN, "abc", "alice", "2024-01-01T00:00:00"))
+    rows = _commit_rows(tmp_path / "c.db", MAIN)
+    assert len(rows) == 1
+    assert rows[0]["author_login"] == "alice"
+
+
+def test_upsert_commit_same_sha_different_repo_kept_separate(tmp_path):
+    # PK is (repo, sha), so an identical sha under a different repo is a
+    # distinct row (defensive against cherry-picks across repos).
+    db = DatabaseManager(str(tmp_path / "c.db"))
+    db.upsert_commit(_commit(MAIN, "dup", "coredev", "2024-01-01T00:00:00"))
+    db.upsert_commit(_commit(CONTRIB, "dup", "coredev", "2024-01-01T00:00:00"))
+    assert len(_commit_rows(tmp_path / "c.db")) == 2
+
+
+def test_upsert_commit_null_author_login(tmp_path):
+    db = DatabaseManager(str(tmp_path / "c.db"))
+    db.upsert_commit(_commit(MAIN, "x", None, "2024-01-01T00:00:00",
+                             author_name="External Dev"))
+    rows = _commit_rows(tmp_path / "c.db", MAIN)
+    assert len(rows) == 1
+    assert rows[0]["author_login"] is None
+    assert rows[0]["author_name"] == "External Dev"
+
+
+def test_upsert_commit_merge_flag_persisted(tmp_path):
+    db = DatabaseManager(str(tmp_path / "c.db"))
+    db.upsert_commit(_commit(MAIN, "m", "coredev", "2024-01-01T00:00:00",
+                             is_merge_commit=True))
+    rows = _commit_rows(tmp_path / "c.db", MAIN)
+    assert rows[0]["is_merge_commit"] == 1
+
+
+def test_fixture_db_has_expected_commits(db_path):
+    rows = _commit_rows(db_path)
+    assert len(rows) == 6
+    # One NULL-login commit and one merge commit exist across the fixture.
+    assert sum(1 for r in rows if r["author_login"] is None) == 1
+    assert sum(1 for r in rows if r["is_merge_commit"]) == 1
+    # Spread across two repos.
+    assert {r["repo"] for r in rows} == {MAIN, CONTRIB}
+
+
+def test_create_statements_declare_commits_composite_pk():
+    stmts = DatabaseSchema.get_create_table_statements()
+    assert "PRIMARY KEY (repo, sha)" in stmts["commits"]
 
 
 # --- migration -------------------------------------------------------------

@@ -315,6 +315,57 @@ class GitHubDataPipeline:
         )
         return stored_count
 
+    def fetch_and_store_commits(self) -> int:
+        """Fetch all commits on the repository's default branch and store them.
+
+        Uses the REST commits endpoint, which defaults to the repository's
+        default branch -- matching what GitHub's contributor graph counts.
+        Each commit is flattened via ``_process_commit``; commits whose author
+        email is not linked to a GitHub account have a NULL author_login.
+
+        Returns the number of commits stored.
+        """
+        logger.info(f"[{self.repo}] Fetching commits...")
+        endpoint = "commits?per_page=100"
+        commits_data = fetch_api(self.repo, endpoint, self.github_token)
+        if not commits_data:
+            logger.warning("No commits found or failed to fetch.")
+            return 0
+
+        stored_count = 0
+        for commit in commits_data:
+            processed_commit = self._process_commit(commit)
+            if self.db.upsert_commit(processed_commit):
+                stored_count += 1
+        self.db.update_last_sync_time('commit', self.repo)
+        self.db.set_metadata(f'total_commits_tracked:{self.repo}', str(stored_count))
+        logger.info(f"[{self.repo}] Stored {stored_count} commits.")
+        return stored_count
+
+    def fetch_and_store_commits_since(self, since_iso: Optional[str]) -> int:
+        """Incrementally fetch commits authored since the given ISO timestamp.
+
+        The commits endpoint supports a `since=` filter (on the commit author
+        date), so incremental sync only pulls commits newer than the last
+        commit sync. Returns the number of commits stored.
+        """
+        logger.info(f"[{self.repo}] Incremental fetch for commits...")
+        endpoint = "commits?per_page=100"
+        if since_iso:
+            endpoint += f"&since={since_iso}"
+        commits_data = fetch_api(self.repo, endpoint, self.github_token)
+        if not commits_data:
+            logger.warning("No commits found or failed to fetch (incremental).")
+            return 0
+        stored_count = 0
+        for commit in commits_data:
+            processed_commit = self._process_commit(commit)
+            if self.db.upsert_commit(processed_commit):
+                stored_count += 1
+        self.db.update_last_sync_time('commit', self.repo)
+        logger.info(f"[{self.repo}] Incremental stored {stored_count} commits")
+        return stored_count
+
     @staticmethod
     def _discussion_author(node: Dict[str, Any]) -> str:
         """Return a node's author login, mapping deleted (null) authors to 'ghost'."""
@@ -424,6 +475,31 @@ class GitHubDataPipeline:
             'is_breaking': 'breaking' in (release.get('name', '').lower() + release.get('body', '').lower()),
         }
 
+    def _process_commit(self, commit: Dict[str, Any]) -> Dict[str, Any]:
+        """Process raw commit data from the GitHub REST commits API.
+
+        The `author` field (the linked GitHub account) is null when the commit
+        email isn't associated with an account; author_login is then NULL. The
+        git author/committer names, emails, and dates always come from the
+        nested `commit` object. is_merge_commit is derived from parent count.
+        """
+        commit_meta = commit.get('commit', {}) or {}
+        git_author = commit_meta.get('author') or {}
+        git_committer = commit_meta.get('committer') or {}
+        author_account = commit.get('author')
+        message = commit_meta.get('message') or ''
+        return {
+            'repo': self.repo,
+            'sha': commit['sha'],
+            'author_login': author_account['login'] if author_account else None,
+            'author_name': git_author.get('name'),
+            'author_email': git_author.get('email'),
+            'authored_at': git_author.get('date'),
+            'committed_at': git_committer.get('date'),
+            'message_headline': message.split('\n', 1)[0],
+            'is_merge_commit': len(commit.get('parents', [])) > 1,
+        }
+
     def sync_all_data(self):
         """Comprehensive sync of all GitHub data"""
         logger.info(f"[{self.repo}] Starting full data sync...")
@@ -434,10 +510,11 @@ class GitHubDataPipeline:
         comment_count = self.fetch_and_store_comments()
         release_count = self.fetch_and_store_releases()
         discussion_count = self.fetch_and_store_discussions()
+        commit_count = self.fetch_and_store_commits()
         add_count = self.fetch_add_del_data()
 
         self.db.update_last_sync_time('full', self.repo)
-        logger.info(f"[{self.repo}] Full sync completed: {pr_count} PRs, {issue_count} issues, {review_count} reviews, {release_count} releases, {comment_count} comments, and {discussion_count} discussions stored.")
+        logger.info(f"[{self.repo}] Full sync completed: {pr_count} PRs, {issue_count} issues, {review_count} reviews, {release_count} releases, {comment_count} comments, {discussion_count} discussions, and {commit_count} commits stored.")
         return {
             'pull_requests': pr_count,
             'issues': issue_count,
@@ -445,6 +522,7 @@ class GitHubDataPipeline:
             'comments': comment_count,
             'releases': release_count,
             'discussions': discussion_count,
+            'commits': commit_count,
             'additions_deletions_fetched': add_count,
             'timestamp': datetime.utcnow().isoformat()
         }
@@ -471,18 +549,26 @@ class GitHubDataPipeline:
                     break
         issue_count = self.fetch_and_store_issues_since(last_inc)
         add_del_count = self.fetch_add_del_for_prs(updated_pr_numbers)
+        # Commits support a `since=` filter on the author date; use the per-repo
+        # last commit sync marker so only newer commits are pulled.
+        last_commit_raw = self.db.get_sync_time_value('commit', self.repo)
+        last_commit_dt = (datetime.fromisoformat(last_commit_raw)
+                          if last_commit_raw else datetime.fromisoformat(default_time))
+        last_commit = max(last_commit_dt, last_full_dt).isoformat()
+        commit_count = self.fetch_and_store_commits_since(last_commit)
         # Discussions GraphQL has no reliable `since` filter, so incremental
         # mode performs a full refetch of discussions like full sync does.
         discussion_count = self.fetch_and_store_discussions()
         self.db.update_last_sync_time('incremental', self.repo)
         logger.info(
             f"[{self.repo}] Incremental sync completed: {pr_count} PRs, {issue_count} issues, "
-            f"{add_del_count} PR stats, {discussion_count} discussions (full refetch)."
+            f"{add_del_count} PR stats, {commit_count} commits, {discussion_count} discussions (full refetch)."
         )
         return {
             'pull_requests': pr_count,
             'issues': issue_count,
             'additions_deletions_updated': add_del_count,
+            'commits': commit_count,
             'discussions': discussion_count,
             'timestamp': datetime.utcnow().isoformat()
         }

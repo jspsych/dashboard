@@ -438,6 +438,30 @@ class DatabaseManager:
             self.logger.error(f"Error upserting discussion comment {data.get('id', 'unknown')}: {e}")
             return False
 
+    def upsert_commit(self, commit_data: Dict[str, Any]) -> bool:
+        """Insert or update a commit record (keyed on repo, sha)"""
+        try:
+            with self.get_connection() as conn:
+                now = datetime.utcnow().isoformat()
+                conn.execute('''
+                    INSERT OR REPLACE INTO commits (
+                        repo, sha, author_login, author_name, author_email,
+                        authored_at, committed_at, message_headline,
+                        is_merge_commit, last_fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    commit_data['repo'], commit_data['sha'],
+                    commit_data.get('author_login'), commit_data.get('author_name'),
+                    commit_data.get('author_email'), commit_data['authored_at'],
+                    commit_data.get('committed_at'), commit_data.get('message_headline'),
+                    commit_data.get('is_merge_commit', False), now
+                ))
+                conn.commit()
+                return True
+        except Exception as e:
+            self.logger.error(f"Error upserting commit {commit_data.get('sha', 'unknown')}: {e}")
+            return False
+
     def get_discussions(self, repo: Optional[str] = None,
                         limit: Optional[int] = None) -> List[Dict]:
         """Get discussions with optional filtering by repo"""

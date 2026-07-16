@@ -114,6 +114,21 @@ def _dcomment(id, repo, discussion_number, author_login, created_at,
     }
 
 
+def _commit(repo, sha, author_login, authored_at, author_name=None,
+            author_email=None, committed_at=None, message_headline=None,
+            is_merge_commit=False):
+    return {
+        "repo": repo, "sha": sha, "author_login": author_login,
+        "author_name": author_name or (author_login or "Unknown"),
+        "author_email": author_email or (
+            f"{author_login}@example.com" if author_login else "external@example.com"),
+        "authored_at": authored_at,
+        "committed_at": committed_at or authored_at,
+        "message_headline": message_headline or f"commit {sha}",
+        "is_merge_commit": is_merge_commit,
+    }
+
+
 def build_fixture_db(path):
     """Build the synthetic analytics DB used by the metric/evaluation tests.
 
@@ -196,6 +211,19 @@ def build_fixture_db(path):
     db.upsert_pull_request(_pr(200, TIMELINES, 200, "alice", "2024-05-03T00:00:00",
                                "merged", "2024-05-04T00:00:00"))
     db.upsert_issue(_issue(200, TIMELINES, 200, "erin", "2024-05-03T00:00:00", "open"))
+
+    # --- Commits (Goal 5). Two repos; one NULL-login commit (email not linked
+    # to an account) and one merge commit that Goal-5 metrics should exclude. ---
+    # MAIN: coredev + alice non-merge, one null-login non-merge, one merge.
+    db.upsert_commit(_commit(MAIN, "sha_main_1", "coredev", "2024-01-01T00:00:00"))
+    db.upsert_commit(_commit(MAIN, "sha_main_2", "alice", "2024-01-05T00:00:00"))
+    db.upsert_commit(_commit(MAIN, "sha_main_3", None, "2024-01-10T00:00:00",
+                             author_name="External Dev"))
+    db.upsert_commit(_commit(MAIN, "sha_main_4", "coredev", "2024-01-15T00:00:00",
+                             is_merge_commit=True))
+    # CONTRIB: alice (also commits to MAIN -> union not sum) + dave.
+    db.upsert_commit(_commit(CONTRIB, "sha_contrib_1", "alice", "2024-05-01T00:00:00"))
+    db.upsert_commit(_commit(CONTRIB, "sha_contrib_2", "dave", "2024-05-02T00:00:00"))
 
     return db
 

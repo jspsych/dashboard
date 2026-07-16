@@ -158,6 +158,22 @@ class DatabaseSchema:
                 )
             ''',
 
+            'commits': '''
+                CREATE TABLE IF NOT EXISTS commits (
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    sha TEXT NOT NULL, -- commit SHA
+                    author_login TEXT, -- GitHub login; NULL if commit email isn't linked to an account
+                    author_name TEXT, -- git author name from commit.author.name
+                    author_email TEXT, -- git author email from commit.author.email
+                    authored_at TEXT NOT NULL, -- commit.author.date
+                    committed_at TEXT, -- commit.committer.date
+                    message_headline TEXT, -- first line of the commit message only
+                    is_merge_commit BOOLEAN DEFAULT FALSE, -- parents length > 1
+                    last_fetched_at TEXT NOT NULL,
+                    PRIMARY KEY (repo, sha)
+                )
+            ''',
+
             'metadata': '''
                 CREATE TABLE IF NOT EXISTS metadata (
                     key TEXT PRIMARY KEY,
@@ -211,7 +227,11 @@ class DatabaseSchema:
             'CREATE INDEX IF NOT EXISTS idx_disc_comment_repo ON discussion_comments (repo)',
             'CREATE INDEX IF NOT EXISTS idx_disc_comment_created_at ON discussion_comments (created_at)',
             'CREATE INDEX IF NOT EXISTS idx_disc_comment_author ON discussion_comments (author_login)',
-            'CREATE INDEX IF NOT EXISTS idx_disc_comment_number ON discussion_comments (discussion_number)'
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_number ON discussion_comments (discussion_number)',
+
+            'CREATE INDEX IF NOT EXISTS idx_commit_repo ON commits (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_commit_authored_at ON commits (authored_at)',
+            'CREATE INDEX IF NOT EXISTS idx_commit_author_login ON commits (author_login)'
         ]
         
         return indexes
