@@ -9,6 +9,7 @@ import pandas as pd
 
 from .data_pipeline import GitHubDataPipeline
 from .evaluation import (
+    DEFINITIONS,
     GOAL_HEADLINE_COLUMN,
     GOAL_STATEMENTS,
     current_vs_previous,
@@ -66,6 +67,36 @@ def _format_change(comparison: dict) -> str:
             f'(change: {change_s})')
 
 
+def _summary_table(series: dict) -> str:
+    """Render the cross-goal summary table shown at the top of the report.
+
+    One row per goal giving the headline metric's current-window value, the
+    non-overlapping 6-months-earlier value, and the percent change, so the
+    board can prioritize by relative improvement at a glance.
+    """
+    rows = []
+    for goal_id, df in series.items():
+        headline = GOAL_HEADLINE_COLUMN.get(goal_id)
+        comparison = current_vs_previous(df, headline) if headline else None
+        title = _GOAL_TITLES.get(goal_id, goal_id)
+        if comparison is None:
+            rows.append({'Goal': title, 'Headline metric': headline or '—',
+                         'Current': '—', 'Previous (6 mo ago)': '—', 'Change': '—'})
+            continue
+        change = comparison['change_pct']
+        rows.append({
+            'Goal': title,
+            'Headline metric': f'`{headline}`',
+            'Current': _format_cell(comparison['current']),
+            'Previous (6 mo ago)': _format_cell(comparison['previous']),
+            'Change': 'n/a' if change is None else f'{change:+.1f}%',
+        })
+    summary_df = pd.DataFrame(
+        rows, columns=['Goal', 'Headline metric', 'Current',
+                       'Previous (6 mo ago)', 'Change'])
+    return '## Summary\n\n' + _df_to_markdown(summary_df)
+
+
 def generate_report(db_path: str, output_dir: str) -> str:
     """
     Compute the goal series and write a dated sustainability report.
@@ -91,11 +122,14 @@ def generate_report(db_path: str, output_dir: str) -> str:
         ('Rolling 6-month windows (182 days) stepped quarterly across project '
          'history. Each table shows the most recent 8 windows.'),
         '',
+        _summary_table(series),
+        '',
     ]
 
     for goal_id, df in series.items():
         title = _GOAL_TITLES.get(goal_id, goal_id)
         statement = GOAL_STATEMENTS.get(goal_id, '')
+        definition = DEFINITIONS.get(goal_id, '')
         headline = GOAL_HEADLINE_COLUMN.get(goal_id)
         comparison = current_vs_previous(df, headline) if headline else None
 
@@ -103,6 +137,9 @@ def generate_report(db_path: str, output_dir: str) -> str:
         parts.append('')
         parts.append(f'_{statement}_')
         parts.append('')
+        if definition:
+            parts.append(f'**How this is measured.** {definition}')
+            parts.append('')
         if comparison is not None:
             parts.append(f'Headline metric (`{headline}`): {_format_change(comparison)}')
             parts.append('')

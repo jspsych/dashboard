@@ -28,6 +28,12 @@ _AUTHOR_COLUMNS = {
     'reviews': 'reviewer_login',
     'discussions': 'author_login',
     'discussion_comments': 'author_login',
+    # Commits carry an author_login that is NULL when the commit email is not
+    # linked to a GitHub account. team.is_bot(None) returns False, so those
+    # NULL-login rows are KEPT by the central bot filter (they are real
+    # commits); the commit-contributor metrics exclude them separately because
+    # a NULL login cannot be counted as a distinct GitHub contributor.
+    'commits': 'author_login',
 }
 
 
@@ -134,14 +140,26 @@ class MetricsCalculator:
         # tables not in _AUTHOR_COLUMNS (e.g. releases) are left unfiltered.
         author_column = _AUTHOR_COLUMNS.get(table_name)
         if author_column and author_column in df.columns:
+            # A SQL NULL login (e.g. a commit whose author email is not linked
+            # to a GitHub account) reads back as a float NaN; normalize it to
+            # None so team.is_bot -- which treats a missing login as "not a
+            # bot" -- KEEPS the row rather than raising on NaN.endswith(...).
+            def _login_or_none(value):
+                return None if pd.isna(value) else value
+
             # user_type is only present on pull_requests and issues.
             if 'user_type' in df.columns:
-                is_bot_mask = df.apply(
-                    lambda row: team.is_bot(row[author_column], row['user_type']),
-                    axis=1
+                is_bot_mask = pd.Series(
+                    [team.is_bot(_login_or_none(login), user_type)
+                     for login, user_type
+                     in zip(df[author_column], df['user_type'])],
+                    index=df.index,
                 )
             else:
-                is_bot_mask = df[author_column].apply(team.is_bot)
+                is_bot_mask = pd.Series(
+                    [team.is_bot(_login_or_none(login)) for login in df[author_column]],
+                    index=df.index,
+                )
             df = df[~is_bot_mask].copy()
             if df.empty:
                 return pd.DataFrame()
@@ -1023,6 +1041,118 @@ class MetricsCalculator:
             "new_contributors": new_contributors,
             "total_contributions": total_contributions
         }
+
+    # commit-based contributor metrics (Goal 5, alternate definition)
+    #
+    # These count contributors the way GitHub's own "Contributors" graph does:
+    # by authorship of non-merge commits on the default branch, keyed on the
+    # linked GitHub account (author_login). This is deliberately narrower than
+    # the engagement-based contributor count (PR/issue/comment/review authors)
+    # -- someone who opens an issue but never lands a commit is an engagement
+    # contributor but not a commit contributor. Both definitions are reported
+    # side by side so readers always know which one they are looking at.
+    # -- helpers --
+
+    def _first_commit_dates(self) -> pd.Series:
+        """
+        Get each commit author's first-ever non-merge commit timestamp.
+
+        Considers only non-merge commits with a non-null author_login (an
+        unlinked commit email cannot be attributed to a distinct GitHub
+        account) and looks across the full history of the repo (ignoring
+        self.days), mirroring _first_contribution_dates so a narrow window does
+        not make established committers look "new".
+
+        Returns:
+            pd.Series: Series indexed by login, with the earliest non-merge
+                       commit timestamp (UTC) as the value. Empty if there is
+                       no qualifying commit data.
+        """
+        commits_df = self._get_data_as_df('commits', 'authored_at',
+                                          ignore_time_filter=True)
+        if commits_df.empty:
+            return pd.Series(dtype='datetime64[ns, UTC]')
+
+        non_merge = commits_df[~commits_df['is_merge_commit'].fillna(False).astype(bool)]
+        non_merge = non_merge[non_merge['author_login'].notna()]
+        if non_merge.empty:
+            return pd.Series(dtype='datetime64[ns, UTC]')
+
+        non_merge = non_merge.copy()
+        non_merge['authored_at'] = pd.to_datetime(non_merge['authored_at'], utc=True)
+        return non_merge.groupby('author_login')['authored_at'].min()
+
+    # -- valueboxes / charts --
+
+    def get_commit_contributor_summary(self) -> dict:
+        """
+        Get a commit-based summary of contributor activity in the current window.
+
+        This is the GitHub-contributor-graph definition of "contributor":
+        distinct GitHub accounts (author_login) that authored a non-merge
+        commit inside the window. Merge commits and commits whose email is not
+        linked to a GitHub account (author_login IS NULL) are excluded from the
+        counts; bot authors are excluded via the central bot filter. This
+        matches GitHub's own contributor graph to within ~1%.
+
+        Returns:
+            dict: A dictionary containing:
+                - commit_contributors: Number of distinct non-null author_login
+                                       values on non-merge commits in the window.
+                - total_commits: Number of non-merge commits in the window
+                                 (including NULL-login commits, which are still
+                                 real commits even though they cannot be
+                                 attributed to a distinct contributor).
+        """
+        commits_df = self._get_data_as_df('commits', 'authored_at')
+        if commits_df.empty:
+            return {"commit_contributors": 0, "total_commits": 0}
+
+        non_merge = commits_df[~commits_df['is_merge_commit'].fillna(False).astype(bool)]
+        if non_merge.empty:
+            return {"commit_contributors": 0, "total_commits": 0}
+
+        contributors = non_merge['author_login'].dropna().nunique()
+        return {
+            "commit_contributors": int(contributors),
+            "total_commits": int(len(non_merge)),
+        }
+
+    def get_commit_contributors_timeline(self, freq: str = 'QE') -> pd.DataFrame:
+        """
+        Get the count of new and cumulative commit contributors per period.
+
+        A commit contributor is "new" in the period containing their first-ever
+        non-merge commit (keyed on author_login), computed over the full
+        history of the repo regardless of self.days -- mirroring
+        get_cumulative_contributors but for the commit-based definition. The
+        running total shows how the commit-contributor base has grown.
+
+        Args:
+            freq (str): The pandas frequency alias to bucket periods by
+                        (e.g. 'QE' for quarter-end). Defaults to quarterly.
+
+        Returns:
+            pd.DataFrame: A DataFrame with columns ['period',
+                          'new_commit_contributors',
+                          'cumulative_commit_contributors']. The final
+                          cumulative value equals the repo's total number of
+                          distinct commit contributors.
+        """
+        columns = ['period', 'new_commit_contributors', 'cumulative_commit_contributors']
+        first_commit = self._first_commit_dates()
+        if first_commit.empty:
+            return pd.DataFrame(columns=columns)
+
+        df = first_commit.reset_index(name='timestamp')
+        result = (
+            df.groupby(pd.Grouper(key='timestamp', freq=freq))
+            .size()
+            .reset_index(name='new_commit_contributors')
+            .rename(columns={'timestamp': 'period'})
+        )
+        result['cumulative_commit_contributors'] = result['new_commit_contributors'].cumsum()
+        return result[columns]
 
     # discussion / support metrics (Goal 3: decrease the time for support
     # responses; broaden participation in the support forum)

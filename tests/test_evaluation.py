@@ -91,6 +91,25 @@ def test_goal5_bucketing(db_path):
     assert _row_for(g5, _utc(2024, 7, 1))["new_contributors"] == 6
 
 
+def test_goal5_commit_column(db_path):
+    series = evaluation.goal_series(db_path)
+    g5 = series["goal5_new_contributors"]
+    assert "new_commit_contributors" in g5.columns
+    # MAIN first non-merge commits: coredev (01-01), alice (01-05) -> both
+    # bucket into the windows ending 2024-04-01 and 2024-07-01; the 2024-01-01
+    # window excludes them (its exclusive end is 2024-01-01).
+    assert _row_for(g5, _utc(2024, 1, 1))["new_commit_contributors"] == 0
+    assert _row_for(g5, _utc(2024, 4, 1))["new_commit_contributors"] == 2
+    assert _row_for(g5, _utc(2024, 7, 1))["new_commit_contributors"] == 2
+
+
+def test_definitions_cover_every_goal():
+    # Every goal with a statement must have a public methodology definition.
+    assert set(evaluation.DEFINITIONS) == set(evaluation.GOAL_STATEMENTS)
+    for key, text in evaluation.DEFINITIONS.items():
+        assert isinstance(text, str) and text.strip()
+
+
 def test_goal_columns_present(db_path):
     series = evaluation.goal_series(db_path)
     assert list(series["goal2_community_merge_time"].columns) == [

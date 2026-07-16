@@ -25,7 +25,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from src.database import DatabaseManager
-from src.evaluation import goal_series, current_vs_previous, GOAL_STATEMENTS, GOAL_HEADLINE_COLUMN
+from src.evaluation import goal_series, current_vs_previous, GOAL_STATEMENTS, GOAL_HEADLINE_COLUMN, DEFINITIONS
 
 db = DatabaseManager("../data/analytics.db")
 
@@ -45,6 +45,7 @@ cvp2 = current_vs_previous(g2, GOAL_HEADLINE_COLUMN['goal2_community_merge_time'
 cvp3 = current_vs_previous(g3, GOAL_HEADLINE_COLUMN['goal3_support_response'])
 cvp4 = current_vs_previous(g4, GOAL_HEADLINE_COLUMN['goal4_community_contributions'])
 cvp5 = current_vs_previous(g5, GOAL_HEADLINE_COLUMN['goal5_new_contributors'])
+cvp5_commit = current_vs_previous(g5, 'new_commit_contributors')
 
 last_sync = "Last Sync Time: N/A"
 _ts = db.get_last_sync_time()
@@ -130,6 +131,18 @@ htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal1_core_team_size']}</p>")
 
 :::
 
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-info-circle\"> </i> <span class=\"ms-2\"> How this is measured</span> </span>")
+```
+
+```{python}
+htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal1_core_team_size']}</p>")
+```
+
+:::
+
 ## Row
 
 ::: {.valuebox icon="person-badge-fill" color="vb-primary" title="Current (6-mo window)"}
@@ -194,6 +207,18 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 
 ```{python}
 htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal2_community_merge_time']}</p>")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-info-circle\"> </i> <span class=\"ms-2\"> How this is measured</span> </span>")
+```
+
+```{python}
+htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal2_community_merge_time']}</p>")
 ```
 
 :::
@@ -269,6 +294,18 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 
 ```{python}
 htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal3_support_response']}</p>")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-info-circle\"> </i> <span class=\"ms-2\"> How this is measured</span> </span>")
+```
+
+```{python}
+htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal3_support_response']}</p>")
 ```
 
 :::
@@ -358,6 +395,18 @@ htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal4_community_contributions']}</p>")
 
 :::
 
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-info-circle\"> </i> <span class=\"ms-2\"> How this is measured</span> </span>")
+```
+
+```{python}
+htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal4_community_contributions']}</p>")
+```
+
+:::
+
 ## Row
 
 ::: {.valuebox icon="diagram-3-fill" color="vb-primary" title="Current (6-mo window)"}
@@ -429,6 +478,40 @@ htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal5_new_contributors']}</p>")
 
 :::
 
+::: {.card}
+
+```{python}
+htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-info-circle\"> </i> <span class=\"ms-2\"> How this is measured</span> </span>")
+```
+
+```{python}
+htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal5_new_contributors']}</p>")
+```
+
+:::
+
+## Row
+
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New contributors (engagement-based)"}
+
+`{python} fmt_metric(cvp5['current'], 'count')`
+
+```{python}
+htmltools.HTML(f"<span>first-ever PR, issue, comment, or review (current 6-mo window)</span>")
+```
+
+:::
+
+::: {.valuebox icon="git" color="vb-primary" title="New contributors (commit-based)"}
+
+`{python} fmt_metric(cvp5_commit['current'], 'count')`
+
+```{python}
+htmltools.HTML(f"<span>first non-merge commit, matching GitHub's contributor graph (current 6-mo window)</span>")
+```
+
+:::
+
 ## Row
 
 ::: {.valuebox icon="person-plus-fill" color="vb-primary" title="Current (6-mo window)"}
@@ -436,7 +519,7 @@ htmltools.HTML(f"<p>{GOAL_STATEMENTS['goal5_new_contributors']}</p>")
 `{python} fmt_metric(cvp5['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>new (first-ever) contributors to jsPsych core</span>")
+htmltools.HTML(f"<span>new (first-ever) contributors to jsPsych core (engagement-based headline)</span>")
 ```
 
 :::
@@ -470,9 +553,13 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-plot_goal_series(g5, [('new_contributors', 'New contributors')],
-                 ylabel='New contributors',
-                 title='New Contributors to jsPsych Core')
+plot_goal_series(
+    g5,
+    [('new_contributors', 'New contributors (engagement-based)'),
+     ('new_commit_contributors', 'New contributors (commit-based)')],
+    ylabel='New contributors',
+    title='New Contributors to jsPsych Core',
+)
 ```
 
 :::

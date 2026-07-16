@@ -63,6 +63,66 @@ GOAL_HEADLINE_COLUMN = {
     'goal5_new_contributors': 'new_contributors',
 }
 
+# Plain-language methodology statements for each goal's headline metric. These
+# are PUBLIC definitions -- the governance board and the public read them to
+# know exactly how each number is computed. They spell out the evaluation
+# window, what counts, and what is excluded (bots, merge commits,
+# self-responses, etc.). Keep them precise; changing a definition changes what
+# the reported number means.
+DEFINITIONS = {
+    'goal1_core_team_size':
+        'The number of people who hold merge (write) access to the jsPsych '
+        'repository as of the end of the window, taken from the maintained '
+        'core-team roster in config/team.json rather than inferred from '
+        'activity. A person is counted for a window if their merge access '
+        'began on or before the window end and had not been revoked by then. '
+        'This is a point-in-time headcount, not an activity measure: a core '
+        'member is counted even if they made no contribution during the '
+        'window.',
+    'goal2_community_merge_time':
+        'The median time, in days, from opening to merging a pull request '
+        'authored by a community member (anyone NOT on the core-team roster), '
+        'over pull requests merged within the trailing six-month window on the '
+        'main jsPsych repository. Only merged PRs count toward the median; '
+        'still-open or closed-unmerged PRs are excluded, as are PRs authored '
+        'by core-team members (tracked separately) and by bots. Lower is '
+        'better.',
+    'goal3_support_response':
+        'The median time, in days, from opening a discussion to its first '
+        'reply by someone other than the author, over discussions opened '
+        'within the trailing six-month window on the main jsPsych repository. '
+        'Replies by the discussion author (self-replies) and by bots do not '
+        'count as a response; a discussion is looked at across all later '
+        'comments so an answer arriving after the window still counts. '
+        'Discussions that never received a qualifying reply are excluded from '
+        'the median. Lower is better.',
+    'goal4_community_contributions':
+        'The total number of contributions -- pull requests, issues, comments, '
+        'and reviews -- made within the trailing six-month window across the '
+        'community repositories (jspsych-contrib and jspsych-timelines). '
+        'Bot-authored activity is excluded via the central bot filter. This is '
+        'a volume measure of activity flowing into the wider jsPsych ecosystem; '
+        'the companion unique-contributor count deduplicates people who are '
+        'active in more than one community repository. Higher is better.',
+    'goal5_new_contributors':
+        'The headline figure is engagement-based: the number of people whose '
+        'FIRST-EVER contribution of any kind to the main jsPsych repository -- '
+        'authoring a pull request, opening an issue, leaving a comment, or '
+        'submitting a review -- falls within the trailing six-month window. '
+        'Each person is attributed to the window of their first-ever '
+        'contribution across all history, so an established contributor active '
+        'again in a later window is not re-counted as new; bot accounts are '
+        'excluded. A second, commit-based figure is reported alongside it: the '
+        'number of distinct GitHub accounts whose first non-merge commit on '
+        'the default branch falls within the window. The commit-based figure '
+        'matches GitHub\'s own contributor graph (merge commits and commits '
+        'whose email is not linked to a GitHub account are excluded, as are '
+        'bots) and is typically much smaller than the engagement-based figure, '
+        'because many people participate through issues and discussion without '
+        'ever landing a commit. Both are legitimate; they answer different '
+        'questions and should never be conflated.',
+}
+
 
 def _quarter_start(dt: datetime) -> datetime:
     """Round a datetime down to the start of its calendar quarter (UTC)."""
@@ -267,23 +327,32 @@ def goal_series(db_path: str = 'data/analytics.db', window_days: int = 182,
         })
 
     # --- Goal 5: new (first-ever) contributors to the main repo per window ---
-    # Compute first-ever contribution dates ONCE over all history, then bucket
-    # into windows with pandas -- avoids re-querying per window.
-    first_contribution = MetricsCalculator(
-        db_path=db_path, days=None, repo=repos.MAIN_REPO
-    )._first_contribution_dates()
+    # Compute first-ever contribution/commit dates ONCE over all history, then
+    # bucket into windows with pandas -- avoids re-querying per window. Two
+    # definitions run in parallel: engagement-based (PR/issue/comment/review
+    # authors, the headline) and commit-based (non-merge commit authors, the
+    # GitHub-contributor-graph definition).
+    goal5_calc = MetricsCalculator(db_path=db_path, days=None, repo=repos.MAIN_REPO)
+    first_contribution = goal5_calc._first_contribution_dates()
+    first_commit = goal5_calc._first_commit_dates()
     goal5_rows = []
     for window_end in windows:
         window_start = window_end - pd.Timedelta(days=window_days)
-        if first_contribution.empty:
-            count = 0
-        else:
+
+        def _count_in_window(first_dates):
+            if first_dates.empty:
+                return 0
             in_window = (
-                (first_contribution >= window_start)
-                & (first_contribution < window_end)
+                (first_dates >= window_start)
+                & (first_dates < window_end)
             )
-            count = int(in_window.sum())
-        goal5_rows.append({'window_end': window_end, 'new_contributors': count})
+            return int(in_window.sum())
+
+        goal5_rows.append({
+            'window_end': window_end,
+            'new_contributors': _count_in_window(first_contribution),
+            'new_commit_contributors': _count_in_window(first_commit),
+        })
 
     return {
         'goal1_core_team_size': pd.DataFrame(
@@ -300,7 +369,8 @@ def goal_series(db_path: str = 'data/analytics.db', window_days: int = 182,
             goal4_rows,
             columns=['window_end', 'contributions', 'unique_contributors']),
         'goal5_new_contributors': pd.DataFrame(
-            goal5_rows, columns=['window_end', 'new_contributors']),
+            goal5_rows,
+            columns=['window_end', 'new_contributors', 'new_commit_contributors']),
     }
 
 
