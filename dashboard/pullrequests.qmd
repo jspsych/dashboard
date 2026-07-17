@@ -1,20 +1,19 @@
 ---
-format: 
+format:
     dashboard:
         scrolling: true
         title: "Pull Requests"
 ---
 
 
-# All
+# All Time
 
-## Row 
+## Row
 
 ```{python}
 import htmltools
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import sys
 import os
@@ -26,80 +25,119 @@ project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+import src.chartkit as ck
 from src.metrics_calculator import MetricsCalculator
 from src.database import DatabaseManager
 
+ck.apply_style()
 
 calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
 calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
 calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
-calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None)
 
-db = DatabaseManager()
+db = DatabaseManager("../data/analytics.db")
 
 ```
 
 ```{python}
 def visualise_merge_time_distribution(calculator: MetricsCalculator) -> None:
+    fig, ax = ck.question_figure("How long do PRs wait before merging?")
     merge_times_df = calculator.merge_time_distribution()
     merge_times = merge_times_df['merge_time_days'] if not merge_times_df.empty else pd.Series(dtype=float)
     bins = [0, 1, 3, 7, 14, 30, np.inf]
     labels = ['<1d', '1-3d', '3-7d', '7-14d', '14-30d', '>30d']
-    merge_time_binned = pd.cut(merge_times, bins=bins, labels=labels, right=False)
-    counts = merge_time_binned.value_counts().sort_index()
-    sns.set_theme(style="whitegrid", palette="Set2")
-    fig, ax = plt.subplots(figsize=(14, 10))
-    n, bins, patches = ax.hist(merge_times, bins=[0, 1, 3, 7, 14, 30, np.inf], color=sns.color_palette('Set2')[2])
-    ax.set_xticks([0, 1, 3, 7, 14, 30])
-    ax.set_xticklabels(['<1d', '1-3d', '3-7d', '7-14d', '14-30d', '>30d'])
-    ax.set_xlabel('Merge Time (days)')
-    ax.set_ylabel('Number of PRs')
-    ax.set_title('PR Merge Time Distribution')
-    for i in range(len(n)):
-        ax.text((bins[i] + bins[i+1]) / 2, n[i] + max(n)*0.01, str(int(n[i])), ha='center', va='bottom', fontsize=12)
+    binned = pd.cut(merge_times, bins=bins, labels=labels, right=False)
+    counts = binned.value_counts().reindex(labels, fill_value=0)
+    dist = pd.DataFrame({'bucket': labels, 'count': counts.values})
+    if dist['count'].sum() == 0:
+        ck.empty_state(ax, "No merged PRs in this period yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    ck.bars(ax, dist, x='bucket',
+            series=[{'col': 'count', 'label': 'PRs'}],
+            ylabel='Number of PRs')
     plt.tight_layout()
     plt.show()
-
 ```
 
 ```{python}
 def visualise_pr_size_distribution(calculator: MetricsCalculator) -> None:
+    fig, ax = ck.question_figure("How big are the changes we review?")
     pr_sizes_df = calculator.pr_size_distribution()
     pr_sizes = pr_sizes_df['size'] if not pr_sizes_df.empty else pd.Series(dtype=float)
     bins = [0, 50, 200, 500, 1000, np.inf]
     labels = ['<50', '50-200', '200-500', '500-1000', '>1000']
-    pr_size_binned = pd.cut(pr_sizes, bins=bins, labels=labels, right=False)
-    counts = pr_size_binned.value_counts().sort_index()
-    sns.set_theme(style="whitegrid", palette="Set2")
-    fig, ax = plt.subplots(figsize=(14, 10))
-    n, bins, patches = ax.hist(pr_sizes, bins=[0, 50, 200, 500, 1000, np.inf], color=sns.color_palette('Set2')[2])
-    ax.set_xticks([0, 50, 200, 500, 1000])
-    ax.set_xticklabels(['<50', '50-200', '200-500', '500-1000', '>1000'], rotation=30)
-    ax.set_xlabel('PR Size (lines changed)')
-    ax.set_ylabel('Number of PRs')
-    ax.set_title('PR Size Distribution (Lines Changed)')
-    for i in range(len(n)):
-        ax.text((bins[i] + bins[i+1]) / 2, n[i] + max(n)*0.01, str(int(n[i])), ha='center', va='bottom', fontsize=12)
+    binned = pd.cut(pr_sizes, bins=bins, labels=labels, right=False)
+    counts = binned.value_counts().reindex(labels, fill_value=0)
+    dist = pd.DataFrame({'bucket': labels, 'count': counts.values})
+    if dist['count'].sum() == 0:
+        ck.empty_state(ax, "No PRs in this period yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    ck.bars(ax, dist, x='bucket',
+            series=[{'col': 'count', 'label': 'PRs'}],
+            ylabel='Number of PRs')
     plt.tight_layout()
     plt.show()
 ```
 
-::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time"}
+```{python}
+def visualise_merge_time_trend(calculator: MetricsCalculator) -> None:
+    fig, ax = ck.question_figure("Are community PRs merging as fast as core-team PRs?")
+    df = calculator.get_pr_merge_time_trend(freq='QE')
+    if df.empty:
+        ck.empty_state(ax, "No merged PRs to chart yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ck.timeseries(
+        ax, df, x='period',
+        series=[{'col': 'community', 'label': 'Community', 'n_col': 'community_n'},
+                {'col': 'core', 'label': 'Core team', 'n_col': 'core_n'}],
+        ylabel='Median days to merge', min_n=5)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_first_response_trend(calculator: MetricsCalculator) -> None:
+    fig, ax = ck.question_figure("How quickly does someone respond to a new PR?")
+    df = calculator.get_pr_first_response_trend(freq='QE')
+    if df.empty:
+        ck.empty_state(ax, "No PR responses to chart yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ck.timeseries(ax, df, x='period',
+                  series=[{'col': 'median_days', 'label': 'Median first response'}],
+                  ylabel='Days to first response')
+    plt.tight_layout()
+    plt.show()
+```
+
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time (days)"}
 
 `{python} float("{:.2f}".format(calculator_all.get_median_pr_merge_time()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window")
 ```
 
 :::
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_all.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_all.get_med_time_to_first_response_prs()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window")
 ```
 
 
@@ -111,7 +149,7 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 `{python} float("{:.2f}".format(calculator_all.get_pr_merge_rate()["merge_rate"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_all.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_all.get_pr_merge_rate()["total_prs"]} total PRs.</span>")
 ```
 
 :::
@@ -121,7 +159,17 @@ htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_all.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_all.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_all.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -129,10 +177,6 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
-```
 
 ```{python}
 visualise_merge_time_distribution(calculator=calculator_all)
@@ -141,13 +185,27 @@ visualise_merge_time_distribution(calculator=calculator_all)
 :::
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
-```
 
 ```{python}
 visualise_pr_size_distribution(calculator=calculator_all)
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+visualise_merge_time_trend(calculator=calculator_all)
+```
+
+:::
+
+::: {.card}
+
+```{python}
+visualise_first_response_trend(calculator=calculator_all)
 ```
 
 :::
@@ -158,26 +216,26 @@ visualise_pr_size_distribution(calculator=calculator_all)
 
 ## Row
 
-# 90d
+# Last 90 Days
 
-## Row 
+## Row
 
-::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time"}
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time (days)"}
 
 `{python} float("{:.2f}".format(calculator_90d.get_median_pr_merge_time()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window")
 ```
 
 :::
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_90d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_90d.get_med_time_to_first_response_prs()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window")
 ```
 
 
@@ -189,7 +247,7 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 `{python} float("{:.2f}".format(calculator_90d.get_pr_merge_rate()["merge_rate"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_90d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_90d.get_pr_merge_rate()["total_prs"]} total PRs.</span>")
 ```
 
 :::
@@ -199,7 +257,17 @@ htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_90d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_90d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_90d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -207,10 +275,6 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
-```
 
 ```{python}
 visualise_merge_time_distribution(calculator=calculator_90d)
@@ -219,10 +283,6 @@ visualise_merge_time_distribution(calculator=calculator_90d)
 :::
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
-```
 
 ```{python}
 visualise_pr_size_distribution(calculator=calculator_90d)
@@ -238,26 +298,26 @@ visualise_pr_size_distribution(calculator=calculator_90d)
 ## Row
 
 
-# 60d
+# Last 60 Days
 
-## Row 
+## Row
 
-::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time"}
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time (days)"}
 
 `{python} float("{:.2f}".format(calculator_60d.get_median_pr_merge_time()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window")
 ```
 
 :::
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_60d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_60d.get_med_time_to_first_response_prs()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window")
 ```
 
 
@@ -268,7 +328,7 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 `{python} float("{:.2f}".format(calculator_60d.get_pr_merge_rate()["merge_rate"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_60d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_60d.get_pr_merge_rate()["total_prs"]} total PRs.</span>")
 ```
 
 :::
@@ -278,7 +338,17 @@ htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_60d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_60d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_60d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -287,10 +357,6 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
-```
 
 ```{python}
 visualise_merge_time_distribution(calculator=calculator_60d)
@@ -299,10 +365,6 @@ visualise_merge_time_distribution(calculator=calculator_60d)
 :::
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
-```
 
 ```{python}
 visualise_pr_size_distribution(calculator=calculator_60d)
@@ -317,26 +379,26 @@ visualise_pr_size_distribution(calculator=calculator_60d)
 
 ## Row
 
-# 30d
+# Last 30 Days
 
-## Row 
+## Row
 
-::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time"}
+::: {.valuebox icon="arrow-down-up" color="vb-primary" title="Median Merge Time (days)"}
 
 `{python} float("{:.2f}".format(calculator_30d.get_median_pr_merge_time()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to merge a pull request that was opened during this time window")
 ```
 
 :::
 
 ::: {.valuebox icon="person-check-fill" color="vb-primary" title="Time to First Response (days)"}
 
-`{python} float("{:.2f}".format(calculator_30d.get_time_to_first_response_issue()))`
+`{python} float("{:.2f}".format(calculator_30d.get_med_time_to_first_response_prs()))`
 
 ```{python}
-htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window") 
+htmltools.HTML(f"<span>days to respond to a pull request that was opened during this time window")
 ```
 
 
@@ -348,7 +410,7 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 `{python} float("{:.2f}".format(calculator_30d.get_pr_merge_rate()["merge_rate"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_30d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_30d.get_pr_merge_rate()["total_prs"]} total PRs.</span>")
 ```
 
 :::
@@ -358,7 +420,17 @@ htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()["total_merged"]} PRs 
 `{python} calculator_30d.backlog_trend_prs()`
 
 ```{python}
-htmltools.HTML(f"<span>PRs open</span>") 
+htmltools.HTML(f"<span>PRs open</span>")
+```
+
+:::
+
+::: {.valuebox icon="people" color="vb-primary" title="Community Merge Time (days)"}
+
+`{python} float("{:.2f}".format(calculator_30d.get_median_pr_merge_time_by_group()["community"]))`
+
+```{python}
+htmltools.HTML(f"<span>vs {calculator_30d.get_median_pr_merge_time_by_group()["core"]:.2f} days for core team</span>")
 ```
 
 :::
@@ -366,10 +438,6 @@ htmltools.HTML(f"<span>PRs open</span>")
 ## Row
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\">Merge Time Distribution</span> </span>")
-```
 
 ```{python}
 visualise_merge_time_distribution(calculator=calculator_30d)
@@ -378,10 +446,6 @@ visualise_merge_time_distribution(calculator=calculator_30d)
 :::
 
 ::: {.card}
-```{python} 
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-file-binary\"> </i> <span class=\"ms-2\">PR Size Distribution</span> </span>")
-```
 
 ```{python}
 visualise_pr_size_distribution(calculator=calculator_30d)

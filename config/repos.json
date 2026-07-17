@@ -1,0 +1,8 @@
+{
+  "description": "Repositories tracked by the analytics pipeline. 'core' = main library repos (Goal 5), 'community' = community contribution repos (Goal 4).",
+  "repos": [
+    {"full_name": "jspsych/jsPsych", "role": "core"},
+    {"full_name": "jspsych/jspsych-contrib", "role": "community"},
+    {"full_name": "jspsych/jspsych-timelines", "role": "community"}
+  ]
+}

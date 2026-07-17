@@ -1,0 +1,9 @@
+{
+  "description": "Core team roster: contributors with merge access to jspsych org repositories. Source of truth for the Goal 1 sustainability metric. Dates are ISO YYYY-MM-DD; merge_access_until null = currently active.",
+  "core_team": [
+    {"login": "jodeleeuw", "merge_access_since": null, "merge_access_until": null},
+    {"login": "bjoluc", "merge_access_since": null, "merge_access_until": null},
+    {"login": "htsukamoto5", "merge_access_since": null, "merge_access_until": null}
+  ],
+  "bots": ["changeset-bot", "dependabot[bot]", "github-actions[bot]"]
+}

@@ -1,0 +1,206 @@
+---
+format:
+    dashboard:
+        scrolling: true
+        title: "Community Repos"
+---
+
+# jspsych-contrib
+
+## Row
+
+```{python}
+import htmltools
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import os
+import datetime
+
+project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+import src.chartkit as ck
+from src.metrics_calculator import MetricsCalculator
+from src.database import DatabaseManager
+from src import repos as repos_module
+
+ck.apply_style()
+
+# Community repos tracked by the pipeline (Goal 4: rate of contribution to
+# community repositories). The two section headers below are hardcoded
+# because Quarto page headers can't be generated dynamically, but the repo
+# names themselves are sourced from config/repos.json via repos_module.
+community_repos = repos_module.repo_names(role='community')
+
+contrib_repo = "jspsych/jspsych-contrib"
+timelines_repo = "jspsych/jspsych-timelines"
+
+contrib_all = MetricsCalculator(db_path="../data/analytics.db", days=None, repo=contrib_repo)
+contrib_90d = MetricsCalculator(db_path="../data/analytics.db", days=90, repo=contrib_repo)
+
+timelines_all = MetricsCalculator(db_path="../data/analytics.db", days=None, repo=timelines_repo)
+timelines_90d = MetricsCalculator(db_path="../data/analytics.db", days=90, repo=timelines_repo)
+
+db = DatabaseManager("../data/analytics.db")
+```
+
+```{python}
+def visualise_contribution_rate(calculator: MetricsCalculator, repo_label: str) -> None:
+    fig, ax = ck.question_figure(f"Are contributions to {repo_label} increasing?")
+    df = calculator.get_contribution_rate(freq='QE')
+    if df.empty:
+        ck.empty_state(ax, f"No contributions to {repo_label} in this period yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ck.bars(ax, df, x='period',
+            series=[{'col': 'merged_prs', 'label': 'Merged PRs'},
+                    {'col': 'opened_issues', 'label': 'Opened issues'}],
+            ylabel='Count', stacked=False)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def visualise_new_contributors(calculator: MetricsCalculator, repo_label: str) -> None:
+    fig, ax = ck.question_figure(f"Are new people still joining {repo_label}?")
+    df = calculator.get_new_contributors_timeline(freq='QE')
+    if df.empty:
+        ck.empty_state(ax, f"No new contributors to {repo_label} in this period yet.")
+        plt.tight_layout()
+        plt.show()
+        return
+    df = df.copy()
+    df['period'] = pd.to_datetime(df['period'])
+    ck.bars(ax, df, x='period',
+            series=[{'col': 'new_contributors', 'label': 'New contributors'}],
+            ylabel='New contributors')
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+def format_last_sync(repo: str) -> str:
+    ts = db.get_last_sync_time(repo=repo)
+    if not ts:
+        return "Last Sync Time: N/A"
+    return "Last Sync Time: " + datetime.datetime.fromisoformat(ts.replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"
+```
+
+::: {.valuebox icon="graph-up-arrow" color="vb-primary" title="Total Contributions (All Time)"}
+
+`{python} contrib_all.get_contributor_summary()["total_contributions"]`
+
+```{python}
+htmltools.HTML(f"<span>PRs + issues + comments + reviews</span>")
+```
+
+:::
+
+::: {.valuebox icon="people-fill" color="vb-primary" title="Unique Contributors (All Time)"}
+
+`{python} contrib_all.get_contributor_summary()["total_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>unique contributors</span>")
+```
+
+:::
+
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New Contributors (Last 90 Days)"}
+
+`{python} contrib_90d.get_contributor_summary()["new_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>first-time contributors in the last 90 days</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+visualise_contribution_rate(calculator=contrib_all, repo_label="jspsych-contrib")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+visualise_new_contributors(calculator=contrib_all, repo_label="jspsych-contrib")
+```
+
+:::
+
+## Row
+
+`{python} format_last_sync(contrib_repo)`
+
+## Row
+
+# jspsych-timelines
+
+## Row
+
+::: {.valuebox icon="graph-up-arrow" color="vb-primary" title="Total Contributions (All Time)"}
+
+`{python} timelines_all.get_contributor_summary()["total_contributions"]`
+
+```{python}
+htmltools.HTML(f"<span>PRs + issues + comments + reviews</span>")
+```
+
+:::
+
+::: {.valuebox icon="people-fill" color="vb-primary" title="Unique Contributors (All Time)"}
+
+`{python} timelines_all.get_contributor_summary()["total_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>unique contributors</span>")
+```
+
+:::
+
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New Contributors (Last 90 Days)"}
+
+`{python} timelines_90d.get_contributor_summary()["new_contributors"]`
+
+```{python}
+htmltools.HTML(f"<span>first-time contributors in the last 90 days</span>")
+```
+
+:::
+
+## Row
+
+::: {.card}
+
+```{python}
+visualise_contribution_rate(calculator=timelines_all, repo_label="jspsych-timelines")
+```
+
+:::
+
+::: {.card}
+
+```{python}
+visualise_new_contributors(calculator=timelines_all, repo_label="jspsych-timelines")
+```
+
+:::
+
+## Row
+
+`{python} format_last_sync(timelines_repo)`
+
+## Row

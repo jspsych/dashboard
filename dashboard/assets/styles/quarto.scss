@@ -1,7 +1,9 @@
 /*-- scss:rules --*/
 
+// Valueboxes: a barely-there brand tint (utilitarian, light theme).
+// Note: --bs-primary-rgb is an RGB triple, so it must be wrapped in rgb()/rgba().
 .bg-vb-primary {
-  background-color: var(--bs-primary-rgb);
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
   border-color: #a1a1a1;
   border-width: 1px;
   border-radius: calc(0.625rem + 4px);
@@ -9,25 +11,27 @@
 
 .value-box-title {
   font-size: 1.1rem;
-  font-weight: bold;}
+  font-weight: bold;
+}
 
 .card {
   border-radius: calc(0.625rem + 4px);
 }
 
 .card-header {
-  background-color: var(--background-color);
+  background-color: transparent;
 }
 
 .card-title {
   font-size: 1.1rem;
 }
 
-p{
-  font-size: 0.8rem;
+// Body text: 0.9rem keeps density while staying comfortably readable
+// (methodology cards are body text and must be legible).
+p {
+  font-size: 0.9rem;
 }
 
-.cell .card-body .html-fill-item .html-fill-container{
+.cell .card-body .html-fill-item .html-fill-container {
   padding-bottom: 0px;
 }
-

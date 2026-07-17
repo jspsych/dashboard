@@ -11,3 +11,5 @@ htmltools
 typing
 httpx
 seaborn
+ruff
+pytest

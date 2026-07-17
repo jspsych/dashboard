@@ -2,10 +2,10 @@
 Database models and schema definitions
 """
 
-from datetime import datetime
-from typing import Optional, List
 import json
 import re
+from datetime import datetime
+from typing import List, Optional
 
 
 class DatabaseSchema:
@@ -18,6 +18,7 @@ class DatabaseSchema:
             'pull_requests': '''
                 CREATE TABLE IF NOT EXISTS pull_requests (
                     id INTEGER PRIMARY KEY,
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
                     number INTEGER NOT NULL, -- PR number
                     title TEXT NOT NULL, -- PR title
                     body TEXT, -- PR description/body
@@ -42,13 +43,14 @@ class DatabaseSchema:
                     pr_type TEXT, -- 'feature', 'bugfix', 'maintenance', 'docs'
                     first_response_at TEXT, -- when first review/comment was made
                     last_fetched_at TEXT NOT NULL,
-                    UNIQUE(number)
+                    UNIQUE(repo, number)
                 )
             ''',
-            
+
             'issues': '''
                 CREATE TABLE IF NOT EXISTS issues (
                     id INTEGER PRIMARY KEY,
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
                     number INTEGER NOT NULL,
                     title TEXT NOT NULL,
                     body TEXT,
@@ -66,27 +68,28 @@ class DatabaseSchema:
                     first_response_at TEXT, -- when first comment/assignment was made
                     is_external_user BOOLEAN DEFAULT TRUE, -- user is not a maintainer
                     last_fetched_at TEXT NOT NULL,
-                    UNIQUE(number)
+                    UNIQUE(repo, number)
                 )
             ''',
-            
+
             'reviews': '''
                 CREATE TABLE IF NOT EXISTS reviews (
                     id INTEGER PRIMARY KEY,
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
                     pr_number INTEGER NOT NULL,
                     reviewer_login TEXT NOT NULL,
                     state TEXT NOT NULL, -- 'APPROVED', 'CHANGES_REQUESTED', 'COMMENTED', 'DISMISSED'
                     submitted_at TEXT NOT NULL,
                     body TEXT,
                     commit_sha TEXT,
-                    last_fetched_at TEXT NOT NULL,
-                    FOREIGN KEY (pr_number) REFERENCES pull_requests (number)
+                    last_fetched_at TEXT NOT NULL
                 )
             ''',
-            
+
             'comments': '''
                 CREATE TABLE IF NOT EXISTS comments (
                     id INTEGER PRIMARY KEY,
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
                     issue_number INTEGER, -- NULL if this is a PR comment
                     pr_number INTEGER, -- NULL if this is an issue comment
                     user_login TEXT NOT NULL,
@@ -103,6 +106,7 @@ class DatabaseSchema:
             'releases': '''
                 CREATE TABLE IF NOT EXISTS releases (
                     id INTEGER PRIMARY KEY,
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
                     tag_name TEXT NOT NULL,
                     name TEXT,
                     body TEXT,
@@ -115,7 +119,58 @@ class DatabaseSchema:
                     zipball_url TEXT,
                     is_breaking BOOLEAN DEFAULT FALSE,
                     last_fetched_at TEXT NOT NULL,
-                    UNIQUE(tag_name)
+                    UNIQUE(repo, tag_name)
+                )
+            ''',
+
+            'discussions': '''
+                CREATE TABLE IF NOT EXISTS discussions (
+                    id INTEGER PRIMARY KEY, -- GitHub databaseId
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    number INTEGER NOT NULL, -- discussion number
+                    title TEXT NOT NULL,
+                    body TEXT,
+                    category TEXT, -- discussion category name (e.g. 'Q&A')
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    author_login TEXT NOT NULL, -- 'ghost' if author deleted
+                    is_answered BOOLEAN DEFAULT FALSE,
+                    answer_comment_id INTEGER, -- databaseId of the accepted answer comment
+                    answer_created_at TEXT, -- when the answer was posted
+                    upvote_count INTEGER,
+                    comments_count INTEGER, -- top-level comments + replies stored
+                    last_fetched_at TEXT NOT NULL,
+                    UNIQUE(repo, number)
+                )
+            ''',
+
+            'discussion_comments': '''
+                CREATE TABLE IF NOT EXISTS discussion_comments (
+                    id INTEGER PRIMARY KEY, -- GitHub databaseId
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    discussion_number INTEGER NOT NULL,
+                    author_login TEXT NOT NULL, -- 'ghost' if author deleted
+                    body TEXT,
+                    created_at TEXT NOT NULL,
+                    is_answer BOOLEAN DEFAULT FALSE,
+                    parent_comment_id INTEGER, -- NULL for top-level, set for replies
+                    last_fetched_at TEXT NOT NULL
+                )
+            ''',
+
+            'commits': '''
+                CREATE TABLE IF NOT EXISTS commits (
+                    repo TEXT NOT NULL, -- 'owner/name' of the source repository
+                    sha TEXT NOT NULL, -- commit SHA
+                    author_login TEXT, -- GitHub login; NULL if commit email isn't linked to an account
+                    author_name TEXT, -- git author name from commit.author.name
+                    author_email TEXT, -- git author email from commit.author.email
+                    authored_at TEXT NOT NULL, -- commit.author.date
+                    committed_at TEXT, -- commit.committer.date
+                    message_headline TEXT, -- first line of the commit message only
+                    is_merge_commit BOOLEAN DEFAULT FALSE, -- parents length > 1
+                    last_fetched_at TEXT NOT NULL,
+                    PRIMARY KEY (repo, sha)
                 )
             ''',
 
@@ -135,6 +190,12 @@ class DatabaseSchema:
         """Returns CREATE INDEX statements for optimized queries"""
         
         indexes = [
+            'CREATE INDEX IF NOT EXISTS idx_pr_repo ON pull_requests (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_issue_repo ON issues (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_review_repo ON reviews (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_comment_repo ON comments (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_release_repo ON releases (repo)',
+
             'CREATE INDEX IF NOT EXISTS idx_pr_state ON pull_requests (state)',
             'CREATE INDEX IF NOT EXISTS idx_pr_created_at ON pull_requests (created_at)',
             'CREATE INDEX IF NOT EXISTS idx_pr_merged_at ON pull_requests (merged_at)',
@@ -156,7 +217,21 @@ class DatabaseSchema:
             'CREATE INDEX IF NOT EXISTS idx_comment_created_at ON comments (created_at)',
             
             'CREATE INDEX IF NOT EXISTS idx_release_published_at ON releases (published_at)',
-            'CREATE INDEX IF NOT EXISTS idx_release_created_at ON releases (created_at)'
+            'CREATE INDEX IF NOT EXISTS idx_release_created_at ON releases (created_at)',
+
+            'CREATE INDEX IF NOT EXISTS idx_discussion_repo ON discussions (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_created_at ON discussions (created_at)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_author ON discussions (author_login)',
+            'CREATE INDEX IF NOT EXISTS idx_discussion_category ON discussions (category)',
+
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_repo ON discussion_comments (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_created_at ON discussion_comments (created_at)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_author ON discussion_comments (author_login)',
+            'CREATE INDEX IF NOT EXISTS idx_disc_comment_number ON discussion_comments (discussion_number)',
+
+            'CREATE INDEX IF NOT EXISTS idx_commit_repo ON commits (repo)',
+            'CREATE INDEX IF NOT EXISTS idx_commit_authored_at ON commits (authored_at)',
+            'CREATE INDEX IF NOT EXISTS idx_commit_author_login ON commits (author_login)'
         ]
         
         return indexes
