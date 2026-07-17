@@ -29,6 +29,17 @@ import pandas as pd
 from . import repos, team
 from .metrics_calculator import MetricsCalculator
 
+# The date GitHub Discussions launched for public repositories (2020-05-06,
+# rounded to the start of that month). jsPsych's support forum cannot contain
+# any activity before this, so support-response windows (Goal 3) start here
+# rather than reporting a misleading "0% answer rate" for years when the
+# feature did not exist. A handful of older forum threads were migrated into
+# Discussions and carry their ORIGINAL (pre-launch) creation dates; those are
+# the only rows that can legitimately predate this constant. This is the single
+# canonical home for the value; src/chartkit.py re-exports it so chart code and
+# evaluation code agree.
+DISCUSSIONS_LAUNCH = '2020-05-01'
+
 # Tables (and their creation-timestamp column) scanned to find the earliest
 # relevant data point when deciding where the first rolling window starts.
 _DATA_TABLES = {
@@ -62,6 +73,74 @@ GOAL_HEADLINE_COLUMN = {
     'goal4_community_contributions': 'contributions',
     'goal5_new_contributors': 'new_contributors',
 }
+
+# Which direction of change counts as an improvement for each goal's headline
+# metric. Time metrics (merge/response latency) improve as they go DOWN; count
+# metrics (people, contributions) improve as they go UP. Used to phrase the
+# change wording and the "(lower/higher is better)" tags in the CLI report.
+GOAL_DIRECTION = {
+    'goal1_core_team_size': 'higher',
+    'goal2_community_merge_time': 'lower',
+    'goal3_support_response': 'lower',
+    'goal4_community_contributions': 'higher',
+    'goal5_new_contributors': 'higher',
+}
+
+# The unit family of each goal's headline metric, so change wording uses the
+# right verbs: 'time' -> faster/slower, 'count' -> more/fewer.
+GOAL_METRIC_KIND = {
+    'goal1_core_team_size': 'count',
+    'goal2_community_merge_time': 'time',
+    'goal3_support_response': 'time',
+    'goal4_community_contributions': 'count',
+    'goal5_new_contributors': 'count',
+}
+
+
+def describe_change(change_pct: Optional[float], direction: str,
+                    metric_kind: str = 'time') -> str:
+    """Render a signed percent change as human, unit-aware, judged wording.
+
+    Turns a raw percent change into a phrase a governance reader can scan, e.g.
+    "▼ 86.0% faster — improved" or "▲ 141.9% slower — worsened". The arrow and
+    verb describe how the *metric value* moved (▲ up / ▼ down; faster/slower for
+    time, more/fewer for counts); the trailing verdict interprets that move
+    against ``direction`` (whether lower or higher is the goal).
+
+    Args:
+        change_pct (Optional[float]): The signed percent change of the metric
+            (current vs. previous). None or NaN yields "–".
+        direction (str): 'lower' if a smaller value is better (e.g. latency),
+            'higher' if a larger value is better (e.g. contributor counts).
+        metric_kind (str): 'time' for latency metrics (faster/slower wording)
+            or 'count' for volume metrics (more/fewer wording).
+
+    Returns:
+        str: The formatted wording. "–" for missing data, "no change" when the
+             change rounds to zero.
+    """
+    if change_pct is None or (isinstance(change_pct, float) and pd.isna(change_pct)):
+        return '–'
+    magnitude = abs(float(change_pct))
+    # Anything that rounds to 0.0% is reported as flat rather than a spurious
+    # "0.0% faster".
+    if round(magnitude, 1) == 0.0:
+        return 'no change'
+
+    increased = change_pct > 0
+    arrow = '▲' if increased else '▼'
+    if metric_kind == 'time':
+        verb = 'slower' if increased else 'faster'
+    else:
+        verb = 'more' if increased else 'fewer'
+
+    if direction == 'lower':
+        verdict = 'worsened' if increased else 'improved'
+    else:  # 'higher' is better
+        verdict = 'improved' if increased else 'worsened'
+
+    return f'{arrow} {magnitude:.1f}% {verb} — {verdict}'
+
 
 # Plain-language methodology statements for each goal's headline metric. These
 # are PUBLIC definitions -- the governance board and the public read them to
@@ -293,6 +372,10 @@ def goal_series(db_path: str = 'data/analytics.db', window_days: int = 182,
             'community_merge_rate': (
                 community['merge_rate'] if community['total_prs'] > 0 else float('nan')
             ),
+            # Sample sizes behind each median, so charts can flag windows whose
+            # median rests on too few merged PRs to trust.
+            'community_n': community['total_merged'],
+            'core_n': core['total_merged'],
         })
 
         answer = main_calc.get_discussion_answer_rate()
@@ -309,6 +392,9 @@ def goal_series(db_path: str = 'data/analytics.db', window_days: int = 182,
             'core_response_share_pct': (
                 share['core_team_pct'] if share['total_responses'] > 0 else float('nan')
             ),
+            # Number of discussions opened in the window, so charts can flag
+            # windows whose median rests on a tiny sample.
+            'n_discussions': answer['total_discussions'],
         })
 
         # --- Goal 4: contribution rate across community repos ---
@@ -354,17 +440,24 @@ def goal_series(db_path: str = 'data/analytics.db', window_days: int = 182,
             'new_commit_contributors': _count_in_window(first_commit),
         })
 
+    # Goal 3 (support responsiveness) cannot have data before GitHub
+    # Discussions existed; drop windows ending before the launch so the series
+    # doesn't report a misleading "0% / no response" for years the forum did
+    # not exist. Referenced as a module global so tests can patch it.
+    launch = pd.Timestamp(DISCUSSIONS_LAUNCH, tz='UTC')
+    goal3_rows = [r for r in goal3_rows if pd.Timestamp(r['window_end']) >= launch]
+
     return {
         'goal1_core_team_size': pd.DataFrame(
             goal1_rows, columns=['window_end', 'value']),
         'goal2_community_merge_time': pd.DataFrame(
             goal2_rows,
             columns=['window_end', 'community_median_days', 'core_median_days',
-                     'community_merge_rate']),
+                     'community_merge_rate', 'community_n', 'core_n']),
         'goal3_support_response': pd.DataFrame(
             goal3_rows,
             columns=['window_end', 'median_first_response_days', 'qa_answer_rate',
-                     'core_response_share_pct']),
+                     'core_response_share_pct', 'n_discussions']),
         'goal4_community_contributions': pd.DataFrame(
             goal4_rows,
             columns=['window_end', 'contributions', 'unique_contributors']),

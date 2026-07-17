@@ -114,12 +114,99 @@ def test_goal_columns_present(db_path):
     series = evaluation.goal_series(db_path)
     assert list(series["goal2_community_merge_time"].columns) == [
         "window_end", "community_median_days", "core_median_days",
-        "community_merge_rate",
+        "community_merge_rate", "community_n", "core_n",
     ]
     assert list(series["goal3_support_response"].columns) == [
         "window_end", "median_first_response_days", "qa_answer_rate",
-        "core_response_share_pct",
+        "core_response_share_pct", "n_discussions",
     ]
+
+
+def test_goal2_sample_size_columns(db_path):
+    # Window ending 2024-07-01 spans all of 2024-H1 (182-day trailing window).
+    # Merged community PRs in it: #3, #4, #7 -> 3; merged core PRs: #1, #2 -> 2.
+    series = evaluation.goal_series(db_path)
+    row = _row_for(series["goal2_community_merge_time"], _utc(2024, 7, 1))
+    assert row["community_n"] == 3
+    assert row["core_n"] == 2
+    # Sanity: the medians still line up with the group merge-time metric.
+    assert row["community_median_days"] == 6.0
+    assert row["core_median_days"] == 3.0
+
+
+def test_goal3_n_discussions(db_path):
+    # All three fixture discussions are created 2024-01-01, so they fall inside
+    # the window ending 2024-07-01.
+    series = evaluation.goal_series(db_path)
+    row = _row_for(series["goal3_support_response"], _utc(2024, 7, 1))
+    assert row["n_discussions"] == 3
+
+
+def test_goal3_starts_at_discussions_launch(db_path, monkeypatch):
+    # The support series must not report windows before Discussions existed.
+    # Patch the launch date forward into the fixture's own history and confirm
+    # the earlier windows are dropped (while the other goals are untouched).
+    monkeypatch.setattr(evaluation, "DISCUSSIONS_LAUNCH", "2024-07-01")
+    series = evaluation.goal_series(db_path)
+    g3 = series["goal3_support_response"]
+    launch = pd.Timestamp("2024-07-01", tz="UTC")
+    assert (pd.to_datetime(g3["window_end"], utc=True) >= launch).all()
+    assert _utc(2024, 1, 1) not in set(g3["window_end"])
+    # Other goals keep their full window history.
+    assert _utc(2024, 1, 1) in set(series["goal1_core_team_size"]["window_end"])
+
+
+def test_default_discussions_launch_keeps_all_2024_windows(db_path):
+    # With the real launch (2020-05), no 2024 fixture window is dropped.
+    series = evaluation.goal_series(db_path)
+    g3 = series["goal3_support_response"]
+    assert _utc(2024, 1, 1) in set(g3["window_end"])
+
+
+# --- GOAL_DIRECTION / describe_change --------------------------------------
+
+def test_goal_direction_covers_every_goal():
+    assert set(evaluation.GOAL_DIRECTION) == set(evaluation.GOAL_STATEMENTS)
+    assert set(evaluation.GOAL_METRIC_KIND) == set(evaluation.GOAL_STATEMENTS)
+    for value in evaluation.GOAL_DIRECTION.values():
+        assert value in ("lower", "higher")
+    for value in evaluation.GOAL_METRIC_KIND.values():
+        assert value in ("time", "count")
+
+
+def test_describe_change_time_improved():
+    # Merge time down 86% is faster and, since lower is better, an improvement.
+    assert evaluation.describe_change(-86.0, "lower", "time") == \
+        "▼ 86.0% faster — improved"
+
+
+def test_describe_change_time_worsened():
+    # Response time up 141.9% is slower and, since lower is better, worse.
+    assert evaluation.describe_change(141.9, "lower", "time") == \
+        "▲ 141.9% slower — worsened"
+
+
+def test_describe_change_count_improved():
+    # Contributions up 12% is more and, since higher is better, an improvement.
+    assert evaluation.describe_change(12.0, "higher", "count") == \
+        "▲ 12.0% more — improved"
+
+
+def test_describe_change_count_worsened():
+    # Contributor count down 20% is fewer and, since higher is better, worse.
+    assert evaluation.describe_change(-20.0, "higher", "count") == \
+        "▼ 20.0% fewer — worsened"
+
+
+def test_describe_change_no_change():
+    assert evaluation.describe_change(0.0, "lower", "time") == "no change"
+    # Rounds to 0.0% -> flat, not a spurious "0.0% faster".
+    assert evaluation.describe_change(0.03, "higher", "count") == "no change"
+
+
+def test_describe_change_missing():
+    assert evaluation.describe_change(None, "lower", "time") == "–"
+    assert evaluation.describe_change(float("nan"), "higher", "count") == "–"
 
 
 # --- current_vs_previous ---------------------------------------------------

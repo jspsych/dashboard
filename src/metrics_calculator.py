@@ -648,11 +648,14 @@ class MetricsCalculator:
 
         Returns:
             pd.DataFrame: A DataFrame with columns ['period', 'core',
-                          'community', 'all']. Periods with no merged PRs are
-                          omitted; within a kept period a group with no merged
-                          PRs has a NaN value for that column.
+                          'community', 'all', 'core_n', 'community_n']. Periods
+                          with no merged PRs are omitted; within a kept period a
+                          group with no merged PRs has a NaN median and a 0
+                          count. ``core_n``/``community_n`` are the number of
+                          merged PRs behind each group's median, so a chart can
+                          flag a median that rests on too few PRs to trust.
         """
-        columns = ['period', 'core', 'community', 'all']
+        columns = ['period', 'core', 'community', 'all', 'core_n', 'community_n']
         prs_df = self._get_data_as_df('pull_requests', 'created_at', ignore_time_filter=True)
         if prs_df.empty or 'merged_at' not in prs_df.columns:
             return pd.DataFrame(columns=columns)
@@ -666,11 +669,21 @@ class MetricsCalculator:
 
         grouper = pd.Grouper(key='merged_at', freq=freq)
         all_med = merged.groupby(grouper)['merge_time'].median()
-        core_med = merged[merged['group'] == 'core'].groupby(grouper)['merge_time'].median()
-        community_med = merged[merged['group'] == 'community'].groupby(grouper)['merge_time'].median()
+        core = merged[merged['group'] == 'core'].groupby(grouper)['merge_time']
+        community = merged[merged['group'] == 'community'].groupby(grouper)['merge_time']
 
-        result = pd.DataFrame({'core': core_med, 'community': community_med, 'all': all_med})
+        result = pd.DataFrame({
+            'core': core.median(),
+            'community': community.median(),
+            'all': all_med,
+            # Reindex the counts onto the full set of kept periods so a period
+            # where a group has no merged PRs reads 0 rather than dropping out.
+            'core_n': core.size(),
+            'community_n': community.size(),
+        })
         result = result.dropna(subset=['all'])
+        result['core_n'] = result['core_n'].fillna(0).astype(int)
+        result['community_n'] = result['community_n'].fillna(0).astype(int)
         result = result.reset_index().rename(columns={'merged_at': 'period'})
         return result[columns]
 

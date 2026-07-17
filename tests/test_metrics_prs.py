@@ -3,6 +3,7 @@ PR metric tests: merge time, merge rate, first-response (bugs 2 & 3),
 core/community group splits with exact medians, and repo isolation.
 """
 
+import pandas as pd
 import pytest
 from conftest import CONTRIB, MAIN
 
@@ -90,6 +91,25 @@ def test_all_repos_combined(make_calc):
     # repo=None includes every repo: 6 non-bot main PRs + 2 community PRs.
     everything = make_calc(days=None, repo=None)
     assert everything.get_pr_merge_rate()["total_prs"] == 8
+
+
+def test_pr_merge_time_trend_sample_sizes(calc):
+    # Quarterly buckets by merged_at. Q1 2024: #1,#2 core + #3,#4 community.
+    # Q2 2024: #7 community only (no core merges).
+    trend = calc.get_pr_merge_time_trend()
+    assert list(trend.columns) == [
+        "period", "core", "community", "all", "core_n", "community_n"
+    ]
+    trend = trend.set_index(
+        trend["period"].dt.tz_localize(None).dt.to_period("Q").astype(str))
+    q1 = trend.loc["2024Q1"]
+    assert q1["core_n"] == 2
+    assert q1["community_n"] == 2
+    q2 = trend.loc["2024Q2"]
+    assert q2["core_n"] == 0          # no core merges that quarter
+    assert q2["community_n"] == 1
+    assert pd.isna(q2["core"])        # ... so the core median is NaN
+    assert q2["community"] == 1.0
 
 
 def test_windowed_end_date_excludes_later_prs(make_calc):

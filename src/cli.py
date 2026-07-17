@@ -10,9 +10,12 @@ import pandas as pd
 from .data_pipeline import GitHubDataPipeline
 from .evaluation import (
     DEFINITIONS,
+    GOAL_DIRECTION,
     GOAL_HEADLINE_COLUMN,
+    GOAL_METRIC_KIND,
     GOAL_STATEMENTS,
     current_vs_previous,
+    describe_change,
     goal_series,
 )
 from .repos import repo_names
@@ -52,6 +55,25 @@ def _df_to_markdown(df: pd.DataFrame) -> str:
     return '\n'.join(lines)
 
 
+def _direction_tag(goal_id: str) -> str:
+    """Return the '(lower is better)' / '(higher is better)' tag for a goal."""
+    direction = GOAL_DIRECTION.get(goal_id)
+    if direction == 'lower':
+        return '(lower is better)'
+    if direction == 'higher':
+        return '(higher is better)'
+    return ''
+
+
+def _describe(goal_id: str, comparison: dict) -> str:
+    """Human, unit-aware, direction-judged wording for a goal's change."""
+    return describe_change(
+        comparison['change_pct'],
+        GOAL_DIRECTION.get(goal_id, 'higher'),
+        GOAL_METRIC_KIND.get(goal_id, 'count'),
+    )
+
+
 def _format_change(comparison: dict) -> str:
     """Render a one-line current-vs-previous comparison."""
     current = comparison['current']
@@ -79,17 +101,18 @@ def _summary_table(series: dict) -> str:
         headline = GOAL_HEADLINE_COLUMN.get(goal_id)
         comparison = current_vs_previous(df, headline) if headline else None
         title = _GOAL_TITLES.get(goal_id, goal_id)
+        tag = _direction_tag(goal_id)
+        metric_label = f'`{headline}` {tag}'.strip() if headline else '—'
         if comparison is None:
-            rows.append({'Goal': title, 'Headline metric': headline or '—',
+            rows.append({'Goal': title, 'Headline metric': metric_label,
                          'Current': '—', 'Previous (6 mo ago)': '—', 'Change': '—'})
             continue
-        change = comparison['change_pct']
         rows.append({
             'Goal': title,
-            'Headline metric': f'`{headline}`',
+            'Headline metric': metric_label,
             'Current': _format_cell(comparison['current']),
             'Previous (6 mo ago)': _format_cell(comparison['previous']),
-            'Change': 'n/a' if change is None else f'{change:+.1f}%',
+            'Change': _describe(goal_id, comparison),
         })
     summary_df = pd.DataFrame(
         rows, columns=['Goal', 'Headline metric', 'Current',
@@ -141,7 +164,10 @@ def generate_report(db_path: str, output_dir: str) -> str:
             parts.append(f'**How this is measured.** {definition}')
             parts.append('')
         if comparison is not None:
-            parts.append(f'Headline metric (`{headline}`): {_format_change(comparison)}')
+            tag = _direction_tag(goal_id)
+            parts.append(
+                f'Headline metric (`{headline}`) {tag}: '
+                f'{_format_change(comparison)} — {_describe(goal_id, comparison)}')
             parts.append('')
         parts.append(_df_to_markdown(df.tail(8)))
         parts.append('')
