@@ -1,23 +1,21 @@
 ---
-format: 
+format:
     dashboard:
         scrolling: true
         title: Overview
 ---
 
-# All
+# All Time
 
-## Row 
+## Row
 
 ```{python}
 import htmltools
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import sys
 import os
-import matplotlib.dates as mdates
 import datetime
 
 project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
@@ -25,209 +23,126 @@ project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+import src.chartkit as ck
 from src.metrics_calculator import MetricsCalculator
 from src.database import DatabaseManager
+
+ck.apply_style()
 
 calculator_30d = MetricsCalculator(db_path="../data/analytics.db", days=30)
 calculator_60d = MetricsCalculator(db_path="../data/analytics.db", days=60)
 calculator_90d = MetricsCalculator(db_path="../data/analytics.db", days=90)
-calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None) 
+calculator_all = MetricsCalculator(db_path="../data/analytics.db", days=None)
 
 db = DatabaseManager("../data/analytics.db")
 ```
 
 ```{python}
-def viusalise_backlog_trend(calculator:MetricsCalculator) -> None:
-    sns.set_theme(style="whitegrid", palette="viridis")
-    fig, ax = plt.subplots(figsize=(12,11))
+def visualise_backlog_trend(calculator: MetricsCalculator) -> None:
+    fig, ax = ck.question_figure("Is the open backlog growing?")
     df = calculator.get_backlog_trend()
-    days = calculator.days 
     if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period', 
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
+        ck.empty_state(ax, "No backlog data for this period yet.")
         plt.tight_layout()
         plt.show()
         return
+    df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
     df = df.set_index('date')
-    bucket_label = "Backlog"
+    days = calculator.days
+    # Thin the series so markers don't turn into soup: daily for short windows,
+    # weekly at 90 days, monthly across the full multi-year history.
     if days is not None and days <= 60:
-        resampled_df = df
-        bucket_label = "Daily Backlog"
+        resampled = df
     elif days == 90:
-        resampled_df = df.resample('W-MON').agg({
-            'opened': 'sum',
-            'closed': 'sum',
-            'backlog': 'last' 
-        }).dropna()
-        bucket_label = "Weekly Backlog"
-    else: 
-        rule, bucket_label = 'W-MON', "Weekly Backlog"
-        resampled_df = df.resample(rule).agg({
-            'opened': 'sum',
-            'closed': 'sum',
-            'backlog': 'last'
-        }).dropna()
-    sns.lineplot(data=resampled_df, x=resampled_df.index, y='backlog', ax=ax, 
-                 marker='o', markersize=5, label=bucket_label)
-    
-    ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel("Total Backlog Count", fontsize=12)
-    ax.tick_params(axis='x', rotation=30)
-    ax.legend()
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+        resampled = df.resample('W-MON').agg({'backlog': 'last'}).dropna()
+    else:
+        resampled = df.resample('MS').agg({'backlog': 'last'}).dropna()
+    resampled = resampled.reset_index()
+    ck.timeseries(ax, resampled, x='date',
+                  series=[{'col': 'backlog', 'label': 'Open backlog'}],
+                  ylabel='Open items (PRs + issues)', integer_y=True)
+    plt.tight_layout()
     plt.show()
 ```
 
 ```{python}
 def visualise_code_churn(calculator: MetricsCalculator) -> None:
-    sns.set_theme(style="whitegrid")
-    fig, ax = plt.subplots(figsize=(12, 11))
-    
+    fig, ax = ck.question_figure("How much code is changing?")
     df = calculator.get_code_churn()
-    days = calculator.days
     if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period', 
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
-        # title_period variable was undefined, setting a default/placeholder
-        title_period = f"Data for {'All Time' if days is None else f'{days} Days'}" 
-        ax.set_title(f"Code Churn: {title_period}")
+        ck.empty_state(ax, "No code-churn data for this period yet.")
         plt.tight_layout()
         plt.show()
         return
-
+    df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
     df = df.set_index('date')
+    days = calculator.days
     if days is not None and days <= 60:
-        resampled_df = df
-        time_label = "Daily"
+        resampled = df
     else:
-        resampled_df = df.resample('W-MON').agg({
-            'additions': 'sum',
-            'deletions': 'sum',
-        }).dropna()
-        time_label = "Weekly"
-
-    # Additions (curve + filled area above 0)
-    ax.plot(resampled_df.index, resampled_df['additions'],
-            color='green', linewidth=1.5, label=f'{time_label} Additions')
-    ax.fill_between(resampled_df.index, resampled_df['additions'], 0,
-                    color='green', alpha=0.3)
-
-    # Deletions (negated, curve + filled area below 0)
-    ax.plot(resampled_df.index, -resampled_df['deletions'],
-            color='red', linewidth=1.5, label=f'{time_label} Deletions')
-    ax.fill_between(resampled_df.index, -resampled_df['deletions'], 0,
-                    color='red', alpha=0.3)
-
-    # Axis formatting
-    ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel("Lines of Code (symlog scale)", fontsize=12)
-    ax.set_yscale("symlog")  
-    ax.tick_params(axis='x', rotation=45)
-    ax.legend()
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+        resampled = df.resample('MS').agg({'additions': 'sum', 'deletions': 'sum'}).dropna()
+    resampled = resampled.reset_index()
+    ck.timeseries(ax, resampled, x='date',
+                  series=[{'col': 'additions', 'label': 'Lines added'},
+                          {'col': 'deletions', 'label': 'Lines removed'}],
+                  ylabel='Lines of code', integer_y=True)
+    plt.tight_layout()
     plt.show()
 ```
 
 ```{python}
 def visualise_release_timeline(calculator: MetricsCalculator) -> None:
-
-    sns.set_theme(style="whitegrid", palette="viridis")
-    fig, ax = plt.subplots(figsize=(12, 5))
-
+    fig, ax = ck.question_figure("How much lands in each release?")
     df = calculator.get_release_and_pr_timeline()
-    days = calculator.days 
     if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period',
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
+        ck.empty_state(ax, "No releases in this period yet.")
         plt.tight_layout()
         plt.show()
         return
-        
+    df = df.copy()
     df['release_date'] = pd.to_datetime(df['release_date'])
     df = df.sort_values('release_date')
-
-    for date in df['release_date']:
-        ax.axvline(x=date, color='green', linestyle='--', linewidth=1, alpha=0.7)
-
-    ax.scatter(df['release_date'], df['merged_pr_count'], color='purple', s=60, zorder=3)
-
-    ax.set_xlabel("Release Date", fontsize=10) 
-    ax.set_ylabel("Merged PRs in Release", fontsize=10) 
-
-    ax.tick_params(axis='x', rotation=45, labelsize=9) 
-
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    ck.bars(ax, df, x='release_date',
+            series=[{'col': 'merged_pr_count', 'label': 'Merged PRs'}],
+            ylabel='Merged PRs in release')
+    plt.tight_layout()
     plt.show()
-
-
 ```
 
 ```{python}
 def visualise_new_contributors_per_quarter(calculator: MetricsCalculator) -> None:
-    sns.set_theme(style="whitegrid", palette="Set2")
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = ck.question_figure("Are new people still joining?")
     df = calculator.get_cumulative_contributors(freq='QE')
     if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period',
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
-        ax.set_title('New Contributors per Quarter')
+        ck.empty_state(ax, "No contributor data for this period yet.")
         plt.tight_layout()
         plt.show()
         return
-
     df = df.copy()
     df['period'] = pd.to_datetime(df['period'])
-    ax.bar(df['period'], df['new_contributors'], width=60,
-           color=sns.color_palette('Set2')[2])
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    ax.set_xlabel('Year')
-    ax.set_ylabel('New Contributors')
-    ax.set_title('New Contributors per Quarter')
-    ax.tick_params(axis='x', rotation=45)
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5, axis='y')
+    ck.bars(ax, df, x='period',
+            series=[{'col': 'new_contributors', 'label': 'New contributors'}],
+            ylabel='New contributors')
     plt.tight_layout()
     plt.show()
 ```
 
 ```{python}
 def visualise_cumulative_contributors(calculator: MetricsCalculator) -> None:
-    sns.set_theme(style="whitegrid", palette="Set2")
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = ck.question_figure("How has the contributor base grown?")
     df = calculator.get_cumulative_contributors(freq='QE')
     if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period',
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
-        ax.set_title('Cumulative Contributors')
+        ck.empty_state(ax, "No contributor data for this period yet.")
         plt.tight_layout()
         plt.show()
         return
-
     df = df.copy()
     df['period'] = pd.to_datetime(df['period'])
-    ax.plot(df['period'], df['cumulative_contributors'],
-            color=sns.color_palette('Set2')[0], linewidth=2)
-    ax.fill_between(df['period'], df['cumulative_contributors'], 0,
-                     color=sns.color_palette('Set2')[0], alpha=0.3)
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Cumulative Contributors')
-    ax.set_title('Cumulative Contributors')
-    ax.tick_params(axis='x', rotation=45)
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ck.timeseries(ax, df, x='period',
+                  series=[{'col': 'cumulative_contributors', 'label': 'Cumulative contributors'}],
+                  ylabel='Cumulative contributors', integer_y=True)
     plt.tight_layout()
     plt.show()
 ```
@@ -237,7 +152,7 @@ def visualise_cumulative_contributors(calculator: MetricsCalculator) -> None:
 `{python} float("{:.2f}".format(calculator_all.get_active_items()["total"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_active_items()["open_prs"]} PRs, {calculator_all.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_active_items()["open_prs"]} PRs, {calculator_all.get_active_items()["open_issues"]} issues</span>")
 ```
 
 :::
@@ -247,7 +162,7 @@ htmltools.HTML(f"<span>{calculator_all.get_active_items()["open_prs"]} PRs, {cal
 `{python} calculator_all.get_community_engagement()["total_engagements"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_community_engagement()["unique_contributors"]} unique contributors</span>")
 ```
 
 :::
@@ -257,7 +172,7 @@ htmltools.HTML(f"<span>{calculator_all.get_community_engagement()["unique_contri
 `{python} calculator_all.get_throughput()`
 
 ```{python}
-htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 ```
 
 :::
@@ -267,7 +182,7 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 `{python} calculator_all.get_total_releases()["releases"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_total_releases()["churn"]} PRs merged</span>")
 ```
 
 :::
@@ -277,21 +192,12 @@ htmltools.HTML(f"<span>{calculator_all.get_total_releases()["churn"]} PRs merged
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
-```
-
-```{python}
-viusalise_backlog_trend(calculator=calculator_all)
+visualise_backlog_trend(calculator=calculator_all)
 ```
 
 :::
 
 ::: {.card}
-
-```{python}
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
-```
 
 ```{python}
 visualise_code_churn(calculator=calculator_all)
@@ -304,10 +210,6 @@ visualise_code_churn(calculator=calculator_all)
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
-```
-
-```{python}
 visualise_release_timeline(calculator=calculator_all)
 ```
 
@@ -318,20 +220,12 @@ visualise_release_timeline(calculator=calculator_all)
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-plus\"> </i> <span class=\"ms-2\"> New contributors per quarter</span> </span>")
-```
-
-```{python}
 visualise_new_contributors_per_quarter(calculator=calculator_all)
 ```
 
 :::
 
 ::: {.card}
-
-```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-graph-up-arrow\"> </i> <span class=\"ms-2\"> Cumulative contributors</span> </span>")
-```
 
 ```{python}
 visualise_cumulative_contributors(calculator=calculator_all)
@@ -346,7 +240,7 @@ visualise_cumulative_contributors(calculator=calculator_all)
 ## Row
 
 
-# 90d
+# Last 90 Days
 
 ## Row
 
@@ -355,7 +249,7 @@ visualise_cumulative_contributors(calculator=calculator_all)
 `{python} float("{:.2f}".format(calculator_90d.get_active_items()["total"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_active_items()["open_prs"]} PRs, {calculator_90d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_active_items()["open_prs"]} PRs, {calculator_90d.get_active_items()["open_issues"]} issues</span>")
 ```
 
 :::
@@ -365,7 +259,7 @@ htmltools.HTML(f"<span>{calculator_90d.get_active_items()["open_prs"]} PRs, {cal
 `{python} calculator_90d.get_community_engagement()["total_engagements"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()["unique_contributors"]} unique contributors</span>")
 ```
 
 :::
@@ -375,7 +269,7 @@ htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()["unique_contri
 `{python} calculator_90d.get_throughput()`
 
 ```{python}
-htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 ```
 
 :::
@@ -385,7 +279,7 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 `{python} calculator_90d.get_total_releases()["releases"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_total_releases()["churn"]} PRs merged</span>")
 ```
 
 :::
@@ -395,21 +289,12 @@ htmltools.HTML(f"<span>{calculator_90d.get_total_releases()["churn"]} PRs merged
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
-```
-
-```{python}
-viusalise_backlog_trend(calculator=calculator_90d)
+visualise_backlog_trend(calculator=calculator_90d)
 ```
 
 :::
 
 ::: {.card}
-
-```{python}
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
-```
 
 ```{python}
 visualise_code_churn(calculator=calculator_90d)
@@ -420,10 +305,6 @@ visualise_code_churn(calculator=calculator_90d)
 ## Row
 
 ::: {.card}
-
-```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
-```
 
 ```{python}
 visualise_release_timeline(calculator=calculator_90d)
@@ -437,7 +318,7 @@ visualise_release_timeline(calculator=calculator_90d)
 
 ## Row
 
-# 60d
+# Last 60 Days
 
 ## Row
 
@@ -446,7 +327,7 @@ visualise_release_timeline(calculator=calculator_90d)
 `{python} float("{:.2f}".format(calculator_60d.get_active_items()["total"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_active_items()["open_prs"]} PRs, {calculator_60d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_active_items()["open_prs"]} PRs, {calculator_60d.get_active_items()["open_issues"]} issues</span>")
 ```
 
 :::
@@ -456,7 +337,7 @@ htmltools.HTML(f"<span>{calculator_60d.get_active_items()["open_prs"]} PRs, {cal
 `{python} calculator_60d.get_community_engagement()["total_engagements"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()["unique_contributors"]} unique contributors</span>")
 ```
 
 :::
@@ -466,7 +347,7 @@ htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()["unique_contri
 `{python} calculator_60d.get_throughput()`
 
 ```{python}
-htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 ```
 
 :::
@@ -476,7 +357,7 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 `{python} calculator_60d.get_total_releases()["releases"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_total_releases()["churn"]} PRs merged</span>")
 ```
 
 :::
@@ -486,21 +367,12 @@ htmltools.HTML(f"<span>{calculator_60d.get_total_releases()["churn"]} PRs merged
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
-```
-
-```{python}
-viusalise_backlog_trend(calculator=calculator_60d)
+visualise_backlog_trend(calculator=calculator_60d)
 ```
 
 :::
 
 ::: {.card}
-
-```{python}
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
-```
 
 ```{python}
 visualise_code_churn(calculator=calculator_60d)
@@ -511,10 +383,6 @@ visualise_code_churn(calculator=calculator_60d)
 ## Row
 
 ::: {.card}
-
-```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
-```
 
 ```{python}
 visualise_release_timeline(calculator=calculator_60d)
@@ -530,7 +398,7 @@ visualise_release_timeline(calculator=calculator_60d)
 
 
 
-# 30d
+# Last 30 Days
 
 ## Row
 
@@ -539,7 +407,7 @@ visualise_release_timeline(calculator=calculator_60d)
 `{python} float("{:.2f}".format(calculator_30d.get_active_items()["total"]))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_active_items()["open_prs"]} PRs, {calculator_30d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_active_items()["open_prs"]} PRs, {calculator_30d.get_active_items()["open_issues"]} issues</span>")
 ```
 
 :::
@@ -549,7 +417,7 @@ htmltools.HTML(f"<span>{calculator_30d.get_active_items()["open_prs"]} PRs, {cal
 `{python} calculator_30d.get_community_engagement()["total_engagements"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()["unique_contributors"]} unique contributors</span>")
 ```
 
 :::
@@ -559,7 +427,7 @@ htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()["unique_contri
 `{python} calculator_30d.get_throughput()`
 
 ```{python}
-htmltools.HTML(f"<span>total issues closed + merged PRs</span>") 
+htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 ```
 
 :::
@@ -569,7 +437,7 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 `{python} calculator_30d.get_total_releases()["releases"]`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_total_releases()["churn"]} PRs merged</span>")
 ```
 
 :::
@@ -579,21 +447,12 @@ htmltools.HTML(f"<span>{calculator_30d.get_total_releases()["churn"]} PRs merged
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-pie-chart\"> </i> <span class=\"ms-2\"> Backlog Trend</span> </span>")
-```
-
-```{python}
-viusalise_backlog_trend(calculator=calculator_30d)
+visualise_backlog_trend(calculator=calculator_30d)
 ```
 
 :::
 
 ::: {.card}
-
-```{python}
-import htmltools
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-code-slash\"> </i> <span class=\"ms-2\"> Code Churn Trends</span> </span>")
-```
 
 ```{python}
 visualise_code_churn(calculator=calculator_30d)
@@ -606,10 +465,6 @@ visualise_code_churn(calculator=calculator_30d)
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-save2\"> </i> <span class=\"ms-2\"> Release Timeline</span> </span>")
-```
-
-```{python}
 visualise_release_timeline(calculator=calculator_30d)
 ```
 
@@ -620,4 +475,3 @@ visualise_release_timeline(calculator=calculator_30d)
 `{python} "Last Sync Time: " + datetime.datetime.fromisoformat(db.get_last_sync_time().replace('Z', '+00:00')).strftime('%b %d, %Y %I:%M %p') + " UTC"`
 
 ## Row
-

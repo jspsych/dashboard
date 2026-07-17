@@ -31,3 +31,21 @@ Run everything from the repo root:
 ## Workflow
 
 - Feature branches PR'd into `main`. The `dev` and `test` branches are historical; `gh-pages` is deploy-only.
+
+## Design Context
+
+### Users
+Governance board members, funders, jsPsych core and community developers, and the public — periodically checking whether sustainability goals are improving. Data-literate, time-constrained, reading not interacting.
+
+### Brand Personality
+Utilitarian, trustworthy, unadorned working instrument. Loosely inspired by jsPsych's identity; must never clash with jspsych.org. Honest numbers are the product.
+
+### Aesthetic Direction
+Light theme only. Quarto dashboard on Bootstrap "cosmo"; keep customization lean. Charts are the centerpiece. Anti-references: startup-analytics gradients, glassmorphism, dark-mode-with-neon.
+
+### Design Principles
+1. Legibility before beauty — drop any styling that costs reading speed or precision.
+2. Honest data presentation — no truncated axes for drama; gaps shown as gaps; definitions next to numbers.
+3. WCAG AA + colorblind-safe — never encode chart meaning in hue alone.
+4. Consistent idiom across pages — same valuebox/chart/footer grammar everywhere.
+5. Utilitarian restraint — prefer removing an element over styling it.

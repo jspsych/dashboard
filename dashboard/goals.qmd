@@ -13,8 +13,6 @@ format:
 import htmltools
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
 import sys
 import os
 import datetime
@@ -24,8 +22,14 @@ project_root = os.path.abspath(os.path.join(os.getcwd(), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+import src.chartkit as ck
 from src.database import DatabaseManager
-from src.evaluation import goal_series, current_vs_previous, GOAL_STATEMENTS, GOAL_HEADLINE_COLUMN, DEFINITIONS
+from src.evaluation import (
+    goal_series, current_vs_previous, GOAL_STATEMENTS, GOAL_HEADLINE_COLUMN,
+    GOAL_DIRECTION, GOAL_METRIC_KIND, DEFINITIONS, describe_change,
+)
+
+ck.apply_style()
 
 db = DatabaseManager("../data/analytics.db")
 
@@ -46,6 +50,14 @@ cvp3 = current_vs_previous(g3, GOAL_HEADLINE_COLUMN['goal3_support_response'])
 cvp4 = current_vs_previous(g4, GOAL_HEADLINE_COLUMN['goal4_community_contributions'])
 cvp5 = current_vs_previous(g5, GOAL_HEADLINE_COLUMN['goal5_new_contributors'])
 cvp5_commit = current_vs_previous(g5, 'new_commit_contributors')
+
+# Scannable "(lower/higher is better)" tag per goal, from the shared direction map.
+DIRECTION_TAG = {'lower': '(lower is better)', 'higher': '(higher is better)'}
+
+
+def direction_tag(goal_id: str) -> str:
+    return DIRECTION_TAG[GOAL_DIRECTION[goal_id]]
+
 
 last_sync = "Last Sync Time: N/A"
 _ts = db.get_last_sync_time()
@@ -71,46 +83,50 @@ def fmt_metric(value, kind: str) -> str:
     return f"{int(round(value))}"
 
 
-def fmt_change(change_pct) -> str:
-    """Format a current-vs-previous percent change, or '–' if undefined."""
-    if change_pct is None or (isinstance(change_pct, float) and pd.isna(change_pct)):
-        return "–"
-    sign = "+" if change_pct >= 0 else ""
-    return f"{sign}{change_pct:.1f}%"
+def split_change(text: str):
+    """Split describe_change() output into a scannable (value, subtitle) pair.
 
-
-def plot_goal_series(df: pd.DataFrame, y_specs, ylabel: str, title: str) -> None:
-    """Plot one or more columns of a goal series over window_end.
-
-    y_specs is a list of (column, label) tuples. NaN values (from stale
-    trailing windows) simply produce a gap in the line rather than an error or
-    a dropped point -- matplotlib handles NaN gaps natively.
+    describe_change yields e.g. "▼ 86.0% faster — improved"; we surface
+    "▼ 86.0%" as the box value and "faster — improved" as its subtitle so the
+    valuebox stays glanceable. "–" and "no change" carry no subtitle.
     """
-    sns.set_theme(style="whitegrid", palette="Set2")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    if df.empty:
-        ax.text(0.5, 0.5, 'No data available for this period',
-                horizontalalignment='center', verticalalignment='center',
-                transform=ax.transAxes, fontsize=12, color='red')
-        ax.set_title(title)
+    if text in ('–', 'no change'):
+        return text, ''
+    parts = text.split(' ', 2)  # ['▼', '86.0%', 'faster — improved']
+    value = ' '.join(parts[:2])
+    subtitle = parts[2] if len(parts) > 2 else ''
+    return value, subtitle
+
+
+def change_parts(cvp, goal_id: str):
+    desc = describe_change(cvp['change_pct'], GOAL_DIRECTION[goal_id],
+                           GOAL_METRIC_KIND[goal_id])
+    return split_change(desc)
+
+
+chg1_val, chg1_sub = change_parts(cvp1, 'goal1_core_team_size')
+chg2_val, chg2_sub = change_parts(cvp2, 'goal2_community_merge_time')
+chg3_val, chg3_sub = change_parts(cvp3, 'goal3_support_response')
+chg4_val, chg4_sub = change_parts(cvp4, 'goal4_community_contributions')
+chg5_val, chg5_sub = change_parts(cvp5, 'goal5_new_contributors')
+
+
+def plot_goal_series(df, series_specs, ylabel, question, integer_y=False, min_n=None):
+    """Plot a goal's rolling-window series through the shared chart kit.
+
+    NaN values (from stale trailing windows or windows predating a goal's data)
+    break the line into an honest gap rather than being smoothed over.
+    """
+    fig, ax = ck.question_figure(question)
+    if df is None or df.empty:
+        ck.empty_state(ax, "No data available for this goal yet.")
         plt.tight_layout()
         plt.show()
         return
-
-    df = df.copy()
-    df['window_end'] = pd.to_datetime(df['window_end'])
-    palette = sns.color_palette('Set2')
-    for i, (col, label) in enumerate(y_specs):
-        ax.plot(df['window_end'], df[col], marker='o', markersize=4,
-                linewidth=2, label=label, color=palette[i % len(palette)])
-
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    ax.set_xlabel('Year')
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
-    ax.legend()
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    d = df.copy()
+    d['window_end'] = pd.to_datetime(d['window_end'])
+    ck.timeseries(ax, d, x='window_end', series=series_specs, ylabel=ylabel,
+                  integer_y=integer_y, min_n=min_n)
     plt.tight_layout()
     plt.show()
 ```
@@ -138,39 +154,39 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal1_core_team_size']}</p>")
+htmltools.HTML(f"<p class=\"text-muted small\"><strong>{direction_tag('goal1_core_team_size')}</strong> {DEFINITIONS['goal1_core_team_size']}</p>")
 ```
 
 :::
 
 ## Row
 
-::: {.valuebox icon="person-badge-fill" color="vb-primary" title="Current (6-mo window)"}
+::: {.valuebox icon="person-badge-fill" color="vb-primary" title="Contributors with merge access"}
 
 `{python} fmt_metric(cvp1['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>contributors with merge access</span>")
+htmltools.HTML(f"<span>trailing 6 months</span>")
 ```
 
 :::
 
-::: {.valuebox icon="clock-history" color="vb-primary" title="Previous (6-mo, non-overlapping)"}
+::: {.valuebox icon="clock-history" color="vb-primary" title="Contributors with merge access"}
 
 `{python} fmt_metric(cvp1['previous'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>same window, 2 quarters earlier</span>")
+htmltools.HTML(f"<span>previous 6 months (non-overlapping)</span>")
 ```
 
 :::
 
 ::: {.valuebox icon="arrow-left-right" color="vb-primary" title="Change"}
 
-`{python} fmt_change(cvp1['change_pct'])`
+`{python} chg1_val`
 
 ```{python}
-htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
+htmltools.HTML(f"<span>{chg1_sub}</span>")
 ```
 
 :::
@@ -180,16 +196,17 @@ htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-graph-up-arrow\"> </i> <span class=\"ms-2\"> Core Team Size (rolling 6-month window)</span> </span>")
-```
-
-```{python}
-plot_goal_series(g1, [('value', 'Core team size')],
+plot_goal_series(g1, [{'col': 'value', 'label': 'Core team size'}],
                  ylabel='Contributors with merge access',
-                 title='Core Team Size')
+                 question='Is merge access spreading beyond the core team?',
+                 integer_y=True)
 ```
 
 :::
+
+## Row
+
+*Note: the trend is flat because config/team.json does not yet record individual merge-access grant dates; until that backfill lands, every window reports the current roster size.*
 
 ## Row
 
@@ -218,39 +235,39 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal2_community_merge_time']}</p>")
+htmltools.HTML(f"<p class=\"text-muted small\"><strong>{direction_tag('goal2_community_merge_time')}</strong> {DEFINITIONS['goal2_community_merge_time']}</p>")
 ```
 
 :::
 
 ## Row
 
-::: {.valuebox icon="hourglass-split" color="vb-primary" title="Current (6-mo window)"}
+::: {.valuebox icon="hourglass-split" color="vb-primary" title="Community merge time (days)"}
 
 `{python} fmt_metric(cvp2['current'], 'days')`
 
 ```{python}
-htmltools.HTML(f"<span>median days to merge a community PR</span>")
+htmltools.HTML(f"<span>trailing 6 months</span>")
 ```
 
 :::
 
-::: {.valuebox icon="clock-history" color="vb-primary" title="Previous (6-mo, non-overlapping)"}
+::: {.valuebox icon="clock-history" color="vb-primary" title="Community merge time (days)"}
 
 `{python} fmt_metric(cvp2['previous'], 'days')`
 
 ```{python}
-htmltools.HTML(f"<span>same window, 2 quarters earlier</span>")
+htmltools.HTML(f"<span>previous 6 months (non-overlapping)</span>")
 ```
 
 :::
 
 ::: {.valuebox icon="arrow-left-right" color="vb-primary" title="Change"}
 
-`{python} fmt_change(cvp2['change_pct'])`
+`{python} chg2_val`
 
 ```{python}
-htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
+htmltools.HTML(f"<span>{chg2_sub}</span>")
 ```
 
 :::
@@ -260,15 +277,13 @@ htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-sign-merge-left\"> </i> <span class=\"ms-2\"> Median PR Merge Time: Community vs Core (days)</span> </span>")
-```
-
-```{python}
 plot_goal_series(
     g2,
-    [('community_median_days', 'Community'), ('core_median_days', 'Core team')],
+    [{'col': 'community_median_days', 'label': 'Community', 'n_col': 'community_n'},
+     {'col': 'core_median_days', 'label': 'Core team', 'n_col': 'core_n'}],
     ylabel='Median days to merge',
-    title='Median PR Merge Time by Contributor Group',
+    question='Are community PRs merging as fast as core-team PRs?',
+    min_n=5,
 )
 ```
 
@@ -305,39 +320,39 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal3_support_response']}</p>")
+htmltools.HTML(f"<p class=\"text-muted small\"><strong>{direction_tag('goal3_support_response')}</strong> {DEFINITIONS['goal3_support_response']}</p>")
 ```
 
 :::
 
 ## Row
 
-::: {.valuebox icon="reply-fill" color="vb-primary" title="Current (6-mo window)"}
+::: {.valuebox icon="reply-fill" color="vb-primary" title="Median first response (days)"}
 
 `{python} fmt_metric(cvp3['current'], 'days')`
 
 ```{python}
-htmltools.HTML(f"<span>median days to first discussion response</span>")
+htmltools.HTML(f"<span>trailing 6 months</span>")
 ```
 
 :::
 
-::: {.valuebox icon="clock-history" color="vb-primary" title="Previous (6-mo, non-overlapping)"}
+::: {.valuebox icon="clock-history" color="vb-primary" title="Median first response (days)"}
 
 `{python} fmt_metric(cvp3['previous'], 'days')`
 
 ```{python}
-htmltools.HTML(f"<span>same window, 2 quarters earlier</span>")
+htmltools.HTML(f"<span>previous 6 months (non-overlapping)</span>")
 ```
 
 :::
 
 ::: {.valuebox icon="arrow-left-right" color="vb-primary" title="Change"}
 
-`{python} fmt_change(cvp3['change_pct'])`
+`{python} chg3_val`
 
 ```{python}
-htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
+htmltools.HTML(f"<span>{chg3_sub}</span>")
 ```
 
 :::
@@ -347,13 +362,11 @@ htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-check-fill\"> </i> <span class=\"ms-2\"> Median Time to First Response (days)</span> </span>")
-```
-
-```{python}
-plot_goal_series(g3, [('median_first_response_days', 'Median days to first response')],
-                 ylabel='Days',
-                 title='Median Time to First Discussion Response')
+plot_goal_series(g3, [{'col': 'median_first_response_days', 'label': 'Median first response',
+                       'n_col': 'n_discussions'}],
+                 ylabel='Days to first response',
+                 question='How quickly does someone respond to a support question?',
+                 min_n=5)
 ```
 
 :::
@@ -361,15 +374,12 @@ plot_goal_series(g3, [('median_first_response_days', 'Median days to first respo
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-patch-question-fill\"> </i> <span class=\"ms-2\"> Q&amp;A Answer Rate &amp; Core Team Response Share (%)</span> </span>")
-```
-
-```{python}
 plot_goal_series(
     g3,
-    [('qa_answer_rate', 'Q&A answer rate'), ('core_response_share_pct', 'Core team response share')],
+    [{'col': 'qa_answer_rate', 'label': 'Q&A answer rate'},
+     {'col': 'core_response_share_pct', 'label': 'Core team response share'}],
     ylabel='Percent',
-    title='Q&A Answer Rate and Core Team Response Share',
+    question='Are support questions getting answered, and who answers them?',
 )
 ```
 
@@ -402,39 +412,39 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal4_community_contributions']}</p>")
+htmltools.HTML(f"<p class=\"text-muted small\"><strong>{direction_tag('goal4_community_contributions')}</strong> {DEFINITIONS['goal4_community_contributions']}</p>")
 ```
 
 :::
 
 ## Row
 
-::: {.valuebox icon="diagram-3-fill" color="vb-primary" title="Current (6-mo window)"}
+::: {.valuebox icon="diagram-3-fill" color="vb-primary" title="Community-repo contributions"}
 
 `{python} fmt_metric(cvp4['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>contributions across community repos</span>")
+htmltools.HTML(f"<span>trailing 6 months</span>")
 ```
 
 :::
 
-::: {.valuebox icon="clock-history" color="vb-primary" title="Previous (6-mo, non-overlapping)"}
+::: {.valuebox icon="clock-history" color="vb-primary" title="Community-repo contributions"}
 
 `{python} fmt_metric(cvp4['previous'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>same window, 2 quarters earlier</span>")
+htmltools.HTML(f"<span>previous 6 months (non-overlapping)</span>")
 ```
 
 :::
 
 ::: {.valuebox icon="arrow-left-right" color="vb-primary" title="Change"}
 
-`{python} fmt_change(cvp4['change_pct'])`
+`{python} chg4_val`
 
 ```{python}
-htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
+htmltools.HTML(f"<span>{chg4_sub}</span>")
 ```
 
 :::
@@ -444,15 +454,13 @@ htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-bar-chart-fill\"> </i> <span class=\"ms-2\"> Community Repo Contributions &amp; Unique Contributors</span> </span>")
-```
-
-```{python}
 plot_goal_series(
     g4,
-    [('contributions', 'Contributions'), ('unique_contributors', 'Unique contributors')],
+    [{'col': 'contributions', 'label': 'Contributions'},
+     {'col': 'unique_contributors', 'label': 'Unique contributors'}],
     ylabel='Count',
-    title='Community Repo Activity (jspsych-contrib + jspsych-timelines)',
+    question='Are contributions to the community repos increasing?',
+    integer_y=True,
 )
 ```
 
@@ -485,7 +493,7 @@ htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\
 ```
 
 ```{python}
-htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal5_new_contributors']}</p>")
+htmltools.HTML(f"<p class=\"text-muted small\"><strong>{direction_tag('goal5_new_contributors')}</strong> {DEFINITIONS['goal5_new_contributors']}</p>")
 ```
 
 :::
@@ -497,7 +505,7 @@ htmltools.HTML(f"<p class=\"text-muted small\">{DEFINITIONS['goal5_new_contribut
 `{python} fmt_metric(cvp5['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>first-ever PR, issue, comment, or review (current 6-mo window)</span>")
+htmltools.HTML(f"<span>first-ever PR, issue, comment, or review (trailing 6 months)</span>")
 ```
 
 :::
@@ -507,39 +515,39 @@ htmltools.HTML(f"<span>first-ever PR, issue, comment, or review (current 6-mo wi
 `{python} fmt_metric(cvp5_commit['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>first non-merge commit, matching GitHub's contributor graph (current 6-mo window)</span>")
+htmltools.HTML(f"<span>first non-merge commit, matching GitHub's contributor graph (trailing 6 months)</span>")
 ```
 
 :::
 
 ## Row
 
-::: {.valuebox icon="person-plus-fill" color="vb-primary" title="Current (6-mo window)"}
+::: {.valuebox icon="person-plus-fill" color="vb-primary" title="New contributors"}
 
 `{python} fmt_metric(cvp5['current'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>new (first-ever) contributors to jsPsych core (engagement-based headline)</span>")
+htmltools.HTML(f"<span>trailing 6 months (engagement-based headline)</span>")
 ```
 
 :::
 
-::: {.valuebox icon="clock-history" color="vb-primary" title="Previous (6-mo, non-overlapping)"}
+::: {.valuebox icon="clock-history" color="vb-primary" title="New contributors"}
 
 `{python} fmt_metric(cvp5['previous'], 'count')`
 
 ```{python}
-htmltools.HTML(f"<span>same window, 2 quarters earlier</span>")
+htmltools.HTML(f"<span>previous 6 months (non-overlapping)</span>")
 ```
 
 :::
 
 ::: {.valuebox icon="arrow-left-right" color="vb-primary" title="Change"}
 
-`{python} fmt_change(cvp5['change_pct'])`
+`{python} chg5_val`
 
 ```{python}
-htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
+htmltools.HTML(f"<span>{chg5_sub}</span>")
 ```
 
 :::
@@ -549,16 +557,13 @@ htmltools.HTML(f"<span>vs previous non-overlapping window</span>")
 ::: {.card}
 
 ```{python}
-htmltools.HTML("<span class=\"card-title d-flex align-items-center\"> <i class=\"bi bi-person-plus\"> </i> <span class=\"ms-2\"> New Contributors (rolling 6-month window)</span> </span>")
-```
-
-```{python}
 plot_goal_series(
     g5,
-    [('new_contributors', 'New contributors (engagement-based)'),
-     ('new_commit_contributors', 'New contributors (commit-based)')],
+    [{'col': 'new_contributors', 'label': 'Engagement-based'},
+     {'col': 'new_commit_contributors', 'label': 'Commit-based'}],
     ylabel='New contributors',
-    title='New Contributors to jsPsych Core',
+    question='Is the contributor pipeline accelerating?',
+    integer_y=True,
 )
 ```
 
