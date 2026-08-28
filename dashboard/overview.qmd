@@ -174,20 +174,20 @@ def visualise_release_timeline(calculator: MetricsCalculator) -> None:
 
 ::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
 
-`{python} float("{:.2f}".format(calculator_all.get_active_items()["total"]))`
+`{python} float("{:.2f}".format(calculator_all.get_active_items()['total']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_active_items()["open_prs"]} PRs, {calculator_all.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_active_items()['open_prs']} PRs, {calculator_all.get_active_items()['open_issues']} issues</span>") 
 ```
 
 :::
 
 ::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
 
-`{python} calculator_all.get_community_engagement()["total_engagements"]`
+`{python} calculator_all.get_community_engagement()['total_engagements']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_community_engagement()['unique_contributors']} unique contributers</span>") 
 ```
 
 :::
@@ -204,10 +204,10 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 
 ::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
 
-`{python} calculator_all.get_total_releases()["releases"]`
+`{python} calculator_all.get_total_releases()['releases']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_total_releases()['churn']} PRs merged</span>") 
 ```
 
 :::
@@ -266,20 +266,20 @@ visualise_release_timeline(calculator=calculator_all)
 
 ::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
 
-`{python} float("{:.2f}".format(calculator_90d.get_active_items()["total"]))`
+`{python} float("{:.2f}".format(calculator_90d.get_active_items()['total']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_active_items()["open_prs"]} PRs, {calculator_90d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_active_items()['open_prs']} PRs, {calculator_90d.get_active_items()['open_issues']} issues</span>") 
 ```
 
 :::
 
 ::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
 
-`{python} calculator_90d.get_community_engagement()["total_engagements"]`
+`{python} calculator_90d.get_community_engagement()['total_engagements']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_community_engagement()['unique_contributors']} unique contributers</span>") 
 ```
 
 :::
@@ -296,10 +296,10 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 
 ::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
 
-`{python} calculator_90d.get_total_releases()["releases"]`
+`{python} calculator_90d.get_total_releases()['releases']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_total_releases()['churn']} PRs merged</span>") 
 ```
 
 :::
@@ -357,20 +357,20 @@ visualise_release_timeline(calculator=calculator_90d)
 
 ::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
 
-`{python} float("{:.2f}".format(calculator_60d.get_active_items()["total"]))`
+`{python} float("{:.2f}".format(calculator_60d.get_active_items()['total']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_active_items()["open_prs"]} PRs, {calculator_60d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_active_items()['open_prs']} PRs, {calculator_60d.get_active_items()['open_issues']} issues</span>") 
 ```
 
 :::
 
 ::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
 
-`{python} calculator_60d.get_community_engagement()["total_engagements"]`
+`{python} calculator_60d.get_community_engagement()['total_engagements']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_community_engagement()['unique_contributors']} unique contributers</span>") 
 ```
 
 :::
@@ -387,10 +387,10 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 
 ::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
 
-`{python} calculator_60d.get_total_releases()["releases"]`
+`{python} calculator_60d.get_total_releases()['releases']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_total_releases()['churn']} PRs merged</span>") 
 ```
 
 :::
@@ -450,20 +450,20 @@ visualise_release_timeline(calculator=calculator_60d)
 
 ::: {.valuebox icon="circle" color="vb-primary" title="Active Items"}
 
-`{python} float("{:.2f}".format(calculator_30d.get_active_items()["total"]))`
+`{python} float("{:.2f}".format(calculator_30d.get_active_items()['total']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_active_items()["open_prs"]} PRs, {calculator_30d.get_active_items()["open_issues"]} issues</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_active_items()['open_prs']} PRs, {calculator_30d.get_active_items()['open_issues']} issues</span>") 
 ```
 
 :::
 
 ::: {.valuebox icon="people" color="vb-primary" title="Community Engagement"}
 
-`{python} calculator_30d.get_community_engagement()["total_engagements"]`
+`{python} calculator_30d.get_community_engagement()['total_engagements']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()["unique_contributors"]} unique contributers</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_community_engagement()['unique_contributors']} unique contributers</span>") 
 ```
 
 :::
@@ -480,10 +480,10 @@ htmltools.HTML(f"<span>total issues closed + merged PRs</span>")
 
 ::: {.valuebox icon="gift-fill" color="vb-primary" title="Releases"}
 
-`{python} calculator_30d.get_total_releases()["releases"]`
+`{python} calculator_30d.get_total_releases()['releases']`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_total_releases()["churn"]} PRs merged</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_total_releases()['churn']} PRs merged</span>") 
 ```
 
 :::

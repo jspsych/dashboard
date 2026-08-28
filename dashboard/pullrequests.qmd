@@ -108,10 +108,10 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 
 ::: {.valuebox icon="clock-fill" color="vb-primary" title="Merge Rate"}
 
-`{python} float("{:.2f}".format(calculator_all.get_pr_merge_rate()["merge_rate"]))`
+`{python} float("{:.2f}".format(calculator_all.get_pr_merge_rate()['merge_rate']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_all.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_all.get_pr_merge_rate()['total_merged']} PRs merged out of {calculator_all.get_pr_merge_rate()['total_prs']} total PRs.</span>") 
 ```
 
 :::
@@ -186,10 +186,10 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 
 ::: {.valuebox icon="clock-fill" color="vb-primary" title="Merge Rate"}
 
-`{python} float("{:.2f}".format(calculator_90d.get_pr_merge_rate()["merge_rate"]))`
+`{python} float("{:.2f}".format(calculator_90d.get_pr_merge_rate()['merge_rate']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_90d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_90d.get_pr_merge_rate()['total_merged']} PRs merged out of {calculator_90d.get_pr_merge_rate()['total_prs']} total PRs.</span>") 
 ```
 
 :::
@@ -265,10 +265,10 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 
 ::: {.valuebox icon="clock-fill" color="vb-primary" title="Merge Rate"}
 
-`{python} float("{:.2f}".format(calculator_60d.get_pr_merge_rate()["merge_rate"]))`
+`{python} float("{:.2f}".format(calculator_60d.get_pr_merge_rate()['merge_rate']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_60d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_60d.get_pr_merge_rate()['total_merged']} PRs merged out of {calculator_60d.get_pr_merge_rate()['total_prs']} total PRs.</span>") 
 ```
 
 :::
@@ -345,10 +345,10 @@ htmltools.HTML(f"<span>days to respond to a pull request that was opened during 
 
 ::: {.valuebox icon="clock-fill" color="vb-primary" title="Merge Rate"}
 
-`{python} float("{:.2f}".format(calculator_30d.get_pr_merge_rate()["merge_rate"]))`
+`{python} float("{:.2f}".format(calculator_30d.get_pr_merge_rate()['merge_rate']))`
 
 ```{python}
-htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()["total_merged"]} PRs merged out of {calculator_30d.get_pr_merge_rate()["total_prs"]} total PRs.</span>") 
+htmltools.HTML(f"<span>{calculator_30d.get_pr_merge_rate()['total_merged']} PRs merged out of {calculator_30d.get_pr_merge_rate()['total_prs']} total PRs.</span>") 
 ```
 
 :::
