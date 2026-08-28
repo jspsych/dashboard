@@ -9,8 +9,7 @@ project:
     - assets/styles/quarto.scss
     - assets/jspsych-favicon.png
 website:
-  navbar: 
-    search: false
+  navbar: false
     
 format:
   dashboard: 
