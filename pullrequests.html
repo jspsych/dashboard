@@ -30,7 +30,6 @@ ul.task-list li input[type="checkbox"] {
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="site_libs/quarto-search/fuse.min.js"></script>
@@ -59,11 +58,11 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-dashboard/components.js"></script>
 
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
+  "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
+  "panel-placement": "start",
+  "type": "textbox",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -92,56 +91,8 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="quarto-dashboard nav-fixed fullcontent quarto-light">
+<body class="quarto-dashboard fullcontent quarto-light">
 
-
-<div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./assets/jspsych-favicon.png" alt="" class="navbar-logo light-content">
-    <img src="./assets/jspsych-favicon.png" alt="" class="navbar-logo dark-content">
-    </a>
-    <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">JsPsych Dashboard</span>
-    </a>
-  </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="./overview.html"> 
-<span class="menu-text">Overview</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link active" href="./pullrequests.html" aria-current="page"> 
-<span class="menu-text">Pull Requests</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./issues.html"> 
-<span class="menu-text">Issues</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./discussions.html"> 
-<span class="menu-text">Discussions</span></a>
-  </li>  
-</ul>
-            <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/jspsych/jsPsych"> <i class="bi bi-github" role="img">
-</i> 
-<span class="menu-text"></span></a>
-  </li>  
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
-</div>
-      </div> <!-- /container-fluid -->
-    </nav>
 <header id="quarto-dashboard-header">
 <nav class="navbar navbar-expand-md slim" data-bs-theme="dark">
   <div class="navbar-container container-fluid">
@@ -161,9 +112,10 @@ ul.task-list li input[type="checkbox"] {
     </div>
 <div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-all" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#all" data-scrolling="true" href="#all" aria-controls="all" aria-selected="true"><span class="nav-link-text">All</span></a></li><li class="nav-item" role="presentation"><a id="tab-d" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#d" data-scrolling="true" href="#d" aria-controls="d" aria-selected="false"><span class="nav-link-text">90d</span></a></li><li class="nav-item" role="presentation"><a id="tab-d-1" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#d-1" data-scrolling="true" href="#d-1" aria-controls="d-1" aria-selected="false"><span class="nav-link-text">60d</span></a></li><li class="nav-item" role="presentation"><a id="tab-d-2" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#d-2" data-scrolling="true" href="#d-2" aria-controls="d-2" aria-selected="false"><span class="nav-link-text">30d</span></a></li></ul></div></div>
 </nav>
-</header></header>
+</header>
+<div id="quarto-search-results"></div>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-layout-custom page-navbar quarto-dashboard-content bslib-gap-spacing html-fill-container dashboard-scrolling quarto-dashboard-pages">
+<div id="quarto-content" class="quarto-container page-layout-custom quarto-dashboard-content bslib-gap-spacing html-fill-container dashboard-scrolling quarto-dashboard-pages">
 <!-- sidebar -->
 <!-- margin-sidebar -->
 <!-- main -->
@@ -186,7 +138,7 @@ Median Merge Time
 <p class="value-box-value">
 0.84
 </p>
-<div id="9bcf41e9" class="cell html-fill-item html-fill-container" data-execution_count="4">
+<div id="b61c3938" class="cell html-fill-item html-fill-container" data-execution_count="4">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="4">
 <span>days to merge a pull request that was opened during this time window
 </span></div>
@@ -207,7 +159,7 @@ Time to First Response (days)
 <p class="value-box-value">
 1.0
 </p>
-<div id="558243ea" class="cell html-fill-item html-fill-container" data-execution_count="5">
+<div id="d812443a" class="cell html-fill-item html-fill-container" data-execution_count="5">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="5">
 <span>days to respond to a pull request that was opened during this time window
 </span></div>
@@ -228,7 +180,7 @@ Merge Rate
 <p class="value-box-value">
 70.85
 </p>
-<div id="f876a072" class="cell html-fill-item html-fill-container" data-execution_count="6">
+<div id="e849c909" class="cell html-fill-item html-fill-container" data-execution_count="6">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="6">
 <span>452 PRs merged out of 638 total PRs.</span>
 </div>
@@ -249,7 +201,7 @@ PR Backlog
 <p class="value-box-value">
 33
 </p>
-<div id="2e01d49b" class="cell html-fill-item html-fill-container" data-execution_count="7">
+<div id="ee8d988e" class="cell html-fill-item html-fill-container" data-execution_count="7">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="7">
 <span>PRs open</span>
 </div>
@@ -262,12 +214,12 @@ PR Backlog
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="91dabce7" class="cell card-body html-fill-item html-fill-container" data-execution_count="8">
+<div id="dcf48b2c" class="cell card-body html-fill-item html-fill-container" data-execution_count="8">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="8">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-sign-merge-left"> </i> <span class="ms-2">Merge Time Distribution</span> </span>
 </div>
 </div>
-<div id="187857df" class="cell card-body html-fill-item html-fill-container" data-execution_count="9">
+<div id="6cfb4a2f" class="cell card-body html-fill-item html-fill-container" data-execution_count="9">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-10-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -278,12 +230,12 @@ grid-auto-rows: minmax(0, 1fr);">
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="5c9fd1b6" class="cell card-body html-fill-item html-fill-container" data-execution_count="10">
+<div id="f759ff1f" class="cell card-body html-fill-item html-fill-container" data-execution_count="10">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="10">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-file-binary"> </i> <span class="ms-2">PR Size Distribution</span> </span>
 </div>
 </div>
-<div id="193a5904" class="cell card-body html-fill-item html-fill-container" data-execution_count="11">
+<div id="760cbed8" class="cell card-body html-fill-item html-fill-container" data-execution_count="11">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-12-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -327,7 +279,7 @@ Median Merge Time
 <p class="value-box-value">
 0.08
 </p>
-<div id="16e16770" class="cell html-fill-item html-fill-container" data-execution_count="12">
+<div id="b99ab23d" class="cell html-fill-item html-fill-container" data-execution_count="12">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="12">
 <span>days to merge a pull request that was opened during this time window
 </span></div>
@@ -348,7 +300,7 @@ Time to First Response (days)
 <p class="value-box-value">
 0.0
 </p>
-<div id="0bc5a63c" class="cell html-fill-item html-fill-container" data-execution_count="13">
+<div id="145d4838" class="cell html-fill-item html-fill-container" data-execution_count="13">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="13">
 <span>days to respond to a pull request that was opened during this time window
 </span></div>
@@ -369,7 +321,7 @@ Merge Rate
 <p class="value-box-value">
 51.43
 </p>
-<div id="0268ce72" class="cell html-fill-item html-fill-container" data-execution_count="14">
+<div id="2a2d15de" class="cell html-fill-item html-fill-container" data-execution_count="14">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="14">
 <span>18 PRs merged out of 35 total PRs.</span>
 </div>
@@ -390,7 +342,7 @@ PR Backlog
 <p class="value-box-value">
 12
 </p>
-<div id="1330b77f" class="cell html-fill-item html-fill-container" data-execution_count="15">
+<div id="6f3560df" class="cell html-fill-item html-fill-container" data-execution_count="15">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="15">
 <span>PRs open</span>
 </div>
@@ -403,12 +355,12 @@ PR Backlog
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="2d432081" class="cell card-body html-fill-item html-fill-container" data-execution_count="16">
+<div id="525294e7" class="cell card-body html-fill-item html-fill-container" data-execution_count="16">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="16">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-sign-merge-left"> </i> <span class="ms-2">Merge Time Distribution</span> </span>
 </div>
 </div>
-<div id="9fd51a64" class="cell card-body html-fill-item html-fill-container" data-execution_count="17">
+<div id="789f0494" class="cell card-body html-fill-item html-fill-container" data-execution_count="17">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-18-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -419,12 +371,12 @@ grid-auto-rows: minmax(0, 1fr);">
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="f0c378d1" class="cell card-body html-fill-item html-fill-container" data-execution_count="18">
+<div id="b7232ea6" class="cell card-body html-fill-item html-fill-container" data-execution_count="18">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="18">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-file-binary"> </i> <span class="ms-2">PR Size Distribution</span> </span>
 </div>
 </div>
-<div id="120166ab" class="cell card-body html-fill-item html-fill-container" data-execution_count="19">
+<div id="35924ee3" class="cell card-body html-fill-item html-fill-container" data-execution_count="19">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-20-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -468,7 +420,7 @@ Median Merge Time
 <p class="value-box-value">
 0.08
 </p>
-<div id="69e7a12b" class="cell html-fill-item html-fill-container" data-execution_count="20">
+<div id="dedf28d9" class="cell html-fill-item html-fill-container" data-execution_count="20">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="20">
 <span>days to merge a pull request that was opened during this time window
 </span></div>
@@ -489,7 +441,7 @@ Time to First Response (days)
 <p class="value-box-value">
 0.0
 </p>
-<div id="693c9372" class="cell html-fill-item html-fill-container" data-execution_count="21">
+<div id="a66bbfd1" class="cell html-fill-item html-fill-container" data-execution_count="21">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="21">
 <span>days to respond to a pull request that was opened during this time window
 </span></div>
@@ -510,7 +462,7 @@ Merge Rate
 <p class="value-box-value">
 75.0
 </p>
-<div id="4977ac41" class="cell html-fill-item html-fill-container" data-execution_count="22">
+<div id="b58e7f3b" class="cell html-fill-item html-fill-container" data-execution_count="22">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="22">
 <span>12 PRs merged out of 16 total PRs.</span>
 </div>
@@ -531,7 +483,7 @@ PR Backlog
 <p class="value-box-value">
 4
 </p>
-<div id="d4333c38" class="cell html-fill-item html-fill-container" data-execution_count="23">
+<div id="4af85a1a" class="cell html-fill-item html-fill-container" data-execution_count="23">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="23">
 <span>PRs open</span>
 </div>
@@ -544,12 +496,12 @@ PR Backlog
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="c80c2b34" class="cell card-body html-fill-item html-fill-container" data-execution_count="24">
+<div id="84c75718" class="cell card-body html-fill-item html-fill-container" data-execution_count="24">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="24">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-sign-merge-left"> </i> <span class="ms-2">Merge Time Distribution</span> </span>
 </div>
 </div>
-<div id="29025101" class="cell card-body html-fill-item html-fill-container" data-execution_count="25">
+<div id="c05bbf9b" class="cell card-body html-fill-item html-fill-container" data-execution_count="25">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-26-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -560,12 +512,12 @@ grid-auto-rows: minmax(0, 1fr);">
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="61d67d0f" class="cell card-body html-fill-item html-fill-container" data-execution_count="26">
+<div id="45824808" class="cell card-body html-fill-item html-fill-container" data-execution_count="26">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="26">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-file-binary"> </i> <span class="ms-2">PR Size Distribution</span> </span>
 </div>
 </div>
-<div id="b17aaa73" class="cell card-body html-fill-item html-fill-container" data-execution_count="27">
+<div id="3e042672" class="cell card-body html-fill-item html-fill-container" data-execution_count="27">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-28-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -609,7 +561,7 @@ Median Merge Time
 <p class="value-box-value">
 0.0
 </p>
-<div id="4c3039ed" class="cell html-fill-item html-fill-container" data-execution_count="28">
+<div id="e0cd6e70" class="cell html-fill-item html-fill-container" data-execution_count="28">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="28">
 <span>days to merge a pull request that was opened during this time window
 </span></div>
@@ -630,7 +582,7 @@ Time to First Response (days)
 <p class="value-box-value">
 0.0
 </p>
-<div id="59f96425" class="cell html-fill-item html-fill-container" data-execution_count="29">
+<div id="80c3f35e" class="cell html-fill-item html-fill-container" data-execution_count="29">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="29">
 <span>days to respond to a pull request that was opened during this time window
 </span></div>
@@ -651,7 +603,7 @@ Merge Rate
 <p class="value-box-value">
 0.0
 </p>
-<div id="fca686e5" class="cell html-fill-item html-fill-container" data-execution_count="30">
+<div id="d29ad7af" class="cell html-fill-item html-fill-container" data-execution_count="30">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="30">
 <span>0 PRs merged out of 2 total PRs.</span>
 </div>
@@ -672,7 +624,7 @@ PR Backlog
 <p class="value-box-value">
 2
 </p>
-<div id="7f7d7f97" class="cell html-fill-item html-fill-container" data-execution_count="31">
+<div id="52efb29e" class="cell html-fill-item html-fill-container" data-execution_count="31">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="31">
 <span>PRs open</span>
 </div>
@@ -685,12 +637,12 @@ PR Backlog
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="f6eccd7d" class="cell card-body html-fill-item html-fill-container" data-execution_count="32">
+<div id="97fb3e80" class="cell card-body html-fill-item html-fill-container" data-execution_count="32">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="32">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-sign-merge-left"> </i> <span class="ms-2">Merge Time Distribution</span> </span>
 </div>
 </div>
-<div id="83dc1db2" class="cell card-body html-fill-item html-fill-container" data-execution_count="33">
+<div id="a81e85dc" class="cell card-body html-fill-item html-fill-container" data-execution_count="33">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-34-output-1.png" class="quarto-dashboard-img-contain">
 </div>
@@ -701,12 +653,12 @@ grid-auto-rows: minmax(0, 1fr);">
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
-<div id="e980aecd" class="cell card-body html-fill-item html-fill-container" data-execution_count="34">
+<div id="9ff02e0e" class="cell card-body html-fill-item html-fill-container" data-execution_count="34">
 <div class="cell-output cell-output-display html-fill-item html-fill-container" data-execution_count="34">
 <span class="card-title d-flex align-items-center"> <i class="bi bi-file-binary"> </i> <span class="ms-2">PR Size Distribution</span> </span>
 </div>
 </div>
-<div id="5e20cc72" class="cell card-body html-fill-item html-fill-container" data-execution_count="35">
+<div id="9dcac4e6" class="cell card-body html-fill-item html-fill-container" data-execution_count="35">
 <div class="cell-output cell-output-display html-fill-item html-fill-container">
 <img src="pullrequests_files/figure-html/cell-36-output-1.png" class="quarto-dashboard-img-contain">
 </div>
